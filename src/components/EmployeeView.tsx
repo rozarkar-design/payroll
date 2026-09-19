@@ -9,7 +9,7 @@ import {
   MapPin,
   Calendar,
   FileText,
-  DollarSign,
+  IndianRupee,
   AlertCircle,
   Award,
   ChevronRight,
@@ -82,11 +82,11 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
     employmentStatus: 'Full-Time' as EmploymentStatus,
     role: 'employee' as const,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    baseSalary: 4200,
-    hraAllowance: 900,
-    sugartownSweetAllowance: 400,
-    transportAllowance: 250,
-    overtimeHourlyRate: 28,
+    baseSalary: 42000,
+    hraAllowance: 9000,
+    sugartownSweetAllowance: 4000,
+    transportAllowance: 2500,
+    overtimeHourlyRate: 280,
     emergencyName: '',
     emergencyRelationship: 'Family',
     emergencyPhone: '',
@@ -739,7 +739,7 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
                       <div className="p-4 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9]">
                         <span className="text-[11px] text-[#6B655D] uppercase font-bold">Monthly Base Pay</span>
                         <p className="text-2xl font-black text-[#201D1A] font-display">
-                          ${activeEmployee.salary.baseSalary.toLocaleString()}
+                          ₹{activeEmployee.salary.baseSalary.toLocaleString('en-IN')}
                           <span className="text-xs font-normal text-[#6B655D] ml-1">/ month</span>
                         </p>
                       </div>
@@ -747,24 +747,24 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
                       <div className="grid grid-cols-2 gap-3 text-xs">
                         <div className="p-3 rounded-xl border border-[#EDEAD9]">
                           <span className="text-[#6B655D] block">HRA & Housing</span>
-                          <span className="font-bold text-[#201D1A]">${activeEmployee.salary.hraAllowance}</span>
+                          <span className="font-bold text-[#201D1A]">₹{activeEmployee.salary.hraAllowance.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="p-3 rounded-xl border border-[#EDEAD9] bg-[#FEF4ED]/50">
                           <span className="text-[#E66A1F] font-bold block">Sugartown Sweet Allowance 🍬</span>
-                          <span className="font-bold text-[#201D1A]">${activeEmployee.salary.sugartownSweetAllowance}</span>
+                          <span className="font-bold text-[#201D1A]">₹{activeEmployee.salary.sugartownSweetAllowance.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="p-3 rounded-xl border border-[#EDEAD9]">
                           <span className="text-[#6B655D] block">Transit / Commute Stipend</span>
-                          <span className="font-bold text-[#201D1A]">${activeEmployee.salary.transportAllowance}</span>
+                          <span className="font-bold text-[#201D1A]">₹{activeEmployee.salary.transportAllowance.toLocaleString('en-IN')}</span>
                         </div>
                         <div className="p-3 rounded-xl border border-[#EDEAD9]">
                           <span className="text-[#6B655D] block">Overtime Hourly Rate</span>
-                          <span className="font-bold text-[#396B5A]">${activeEmployee.salary.overtimeHourlyRate}/hr</span>
+                          <span className="font-bold text-[#396B5A]">₹{activeEmployee.salary.overtimeHourlyRate}/hr</span>
                         </div>
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#FAF8F2] text-[11px] text-[#6B655D] flex items-center justify-between">
-                        <span>Statutory Deductions: Income Tax ({activeEmployee.salary.taxDeductionsRate}%) + Health (${activeEmployee.salary.healthInsuranceDeduction})</span>
+                        <span>Statutory Deductions: Income Tax ({activeEmployee.salary.taxDeductionsRate}%) + Health (₹{activeEmployee.salary.healthInsuranceDeduction.toLocaleString('en-IN')})</span>
                         <span className="font-semibold text-[#201D1A]">Automated Payroll</span>
                       </div>
                     </div>
@@ -1016,8 +1016,8 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
               {/* Salary Setup */}
               <div className="pt-2 border-t border-[#EDEAD9]">
                 <h4 className="font-bold text-[#201D1A] mb-2 flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-[#396B5A]" />
-                  <span>Salary Structure (USD / Month)</span>
+                  <IndianRupee className="w-3.5 h-3.5 text-[#396B5A]" />
+                  <span>Salary Structure (INR / Month - ₹)</span>
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div>

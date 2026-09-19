@@ -11,7 +11,7 @@ import {
   User,
   Briefcase,
   Calendar,
-  DollarSign,
+  IndianRupee,
   ShieldAlert,
   Award,
   BookOpen,
@@ -540,7 +540,7 @@ SUGARTOWN RETAIL PRIVATE LIMITED
             <div className="p-5 bg-white rounded-3xl border border-[#E5E0D2] shadow-2xs space-y-4">
               <div className="flex items-center justify-between border-b border-[#EDEAD9] pb-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#201D1A] flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-[#396B5A]" />
+                  <IndianRupee className="w-4 h-4 text-[#396B5A]" />
                   Salary Breakup Customizer
                 </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#EEF7F4] text-[#396B5A]">
@@ -963,7 +963,7 @@ SUGARTOWN RETAIL PRIVATE LIMITED
 
                   <div className="p-3.5 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9]">
                     <h4 className="font-bold text-[#201D1A] flex items-center gap-1.5 mb-1">
-                      <DollarSign className="w-3.5 h-3.5 text-[#E66A1F]" />
+                      <IndianRupee className="w-3.5 h-3.5 text-[#E66A1F]" />
                       3. Cash Handling, POS Invoicing & Sweet Tasting Integrity
                     </h4>
                     <p className="text-[11px] text-[#6B655D]">

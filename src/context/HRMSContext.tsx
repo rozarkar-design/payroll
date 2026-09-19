@@ -191,7 +191,30 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
   
   const [employees, setEmployees] = useState<Employee[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.EMPLOYEES);
-    return saved ? JSON.parse(saved) : INITIAL_EMPLOYEES;
+    if (!saved) return INITIAL_EMPLOYEES;
+    try {
+      const parsed: Employee[] = JSON.parse(saved);
+      // Migrate existing USD scale to INR if detected (< 15000 base salary)
+      return parsed.map(emp => {
+        if (emp.salary && emp.salary.baseSalary < 15000) {
+          return {
+            ...emp,
+            salary: {
+              ...emp.salary,
+              baseSalary: emp.salary.baseSalary * 10,
+              hraAllowance: emp.salary.hraAllowance * 10,
+              sugartownSweetAllowance: emp.salary.sugartownSweetAllowance * 10,
+              transportAllowance: emp.salary.transportAllowance * 10,
+              overtimeHourlyRate: (emp.salary.overtimeHourlyRate || 25) * 10,
+              healthInsuranceDeduction: emp.salary.healthInsuranceDeduction * 10
+            }
+          };
+        }
+        return emp;
+      });
+    } catch {
+      return INITIAL_EMPLOYEES;
+    }
   });
 
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(() => {
@@ -206,7 +229,51 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PAYROLL);
-    return saved ? JSON.parse(saved) : INITIAL_PAYROLL_RECORDS;
+    if (!saved) return INITIAL_PAYROLL_RECORDS;
+    try {
+      const parsed: PayrollRecord[] = JSON.parse(saved);
+      // Migrate existing USD scale to INR if detected (< 15000 basic pay)
+      return parsed.map(rec => {
+        if (rec.earnings && rec.earnings.basic < 15000) {
+          const basic = rec.earnings.basic * 10;
+          const hra = rec.earnings.hra * 10;
+          const confectioneryAllowance = rec.earnings.confectioneryAllowance * 10;
+          const transport = rec.earnings.transport * 10;
+          const overtimePay = rec.earnings.overtimePay * 10;
+          const incentivesBonus = rec.earnings.incentivesBonus * 10;
+
+          const incomeTax = rec.deductions.incomeTax * 10;
+          const unpaidLeaveDeduction = rec.deductions.unpaidLeaveDeduction * 10;
+          const healthInsurance = rec.deductions.healthInsurance * 10;
+          const providentFund = rec.deductions.providentFund * 10;
+
+          const gross = basic + hra + confectioneryAllowance + transport + overtimePay + incentivesBonus;
+          const deductions = incomeTax + unpaidLeaveDeduction + healthInsurance + providentFund;
+
+          return {
+            ...rec,
+            earnings: {
+              basic,
+              hra,
+              confectioneryAllowance,
+              transport,
+              overtimePay,
+              incentivesBonus
+            },
+            deductions: {
+              incomeTax,
+              unpaidLeaveDeduction,
+              healthInsurance,
+              providentFund
+            },
+            netSalary: gross - deductions
+          };
+        }
+        return rec;
+      });
+    } catch {
+      return INITIAL_PAYROLL_RECORDS;
+    }
   });
 
   const [jobOpenings, setJobOpenings] = useState<JobOpening[]>(() => {
@@ -582,8 +649,8 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const sweetAllowance = emp.salary.sugartownSweetAllowance;
       const transport = emp.salary.transportAllowance;
       const otHours = emp.role === 'employee' ? 6 : emp.role === 'store_manager' ? 8 : 0;
-      const otPay = otHours * (emp.salary.overtimeHourlyRate || 25);
-      const bonus = emp.role === 'store_manager' ? 450 : 350;
+      const otPay = otHours * (emp.salary.overtimeHourlyRate || 280);
+      const bonus = emp.role === 'store_manager' ? 4500 : 3500;
 
       const gross = basic + hra + sweetAllowance + transport + otPay + bonus;
       const taxRate = emp.salary.taxDeductionsRate / 100;
@@ -600,7 +667,7 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
         designation: emp.designation,
         department: emp.department,
         locationName: emp.locationName,
-        bankAccountMasked: `•••• •••• •••• ${Math.floor(1000 + Math.random() * 9000)} (Direct Deposit)`,
+        bankAccountMasked: `•••• •••• •••• ${Math.floor(1000 + Math.random() * 9000)} (Electronic Bank Deposit)`,
         workingDays: 22,
         presentDays: 22,
         leaveDays: 0,

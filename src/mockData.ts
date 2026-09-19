@@ -150,13 +150,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2021-03-15',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 9500,
-      hraAllowance: 2200,
-      sugartownSweetAllowance: 800,
-      transportAllowance: 450,
+      baseSalary: 95000,
+      hraAllowance: 22000,
+      sugartownSweetAllowance: 8000,
+      transportAllowance: 4500,
       overtimeHourlyRate: 0,
       taxDeductionsRate: 18,
-      healthInsuranceDeduction: 280
+      healthInsuranceDeduction: 2800
     },
     emergencyContact: {
       name: 'Thomas Sugartown',
@@ -187,13 +187,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2022-01-10',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 6800,
-      hraAllowance: 1400,
-      sugartownSweetAllowance: 500,
-      transportAllowance: 350,
+      baseSalary: 68000,
+      hraAllowance: 14000,
+      sugartownSweetAllowance: 5000,
+      transportAllowance: 3500,
       overtimeHourlyRate: 0,
       taxDeductionsRate: 15,
-      healthInsuranceDeduction: 220
+      healthInsuranceDeduction: 2200
     },
     emergencyContact: {
       name: 'Julian Dupont',
@@ -223,13 +223,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2022-05-18',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 5200,
-      hraAllowance: 1100,
-      sugartownSweetAllowance: 450,
-      transportAllowance: 300,
-      overtimeHourlyRate: 40,
+      baseSalary: 52000,
+      hraAllowance: 11000,
+      sugartownSweetAllowance: 4500,
+      transportAllowance: 3000,
+      overtimeHourlyRate: 400,
       taxDeductionsRate: 14,
-      healthInsuranceDeduction: 190
+      healthInsuranceDeduction: 1900
     },
     emergencyContact: {
       name: 'Sofia Rossi',
@@ -259,13 +259,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2021-08-01',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 6400,
-      hraAllowance: 1300,
-      sugartownSweetAllowance: 500,
-      transportAllowance: 320,
+      baseSalary: 64000,
+      hraAllowance: 13000,
+      sugartownSweetAllowance: 5000,
+      transportAllowance: 3200,
       overtimeHourlyRate: 0,
       taxDeductionsRate: 15,
-      healthInsuranceDeduction: 210
+      healthInsuranceDeduction: 2100
     },
     emergencyContact: {
       name: 'Camille Bell',
@@ -294,13 +294,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2023-04-12',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 3900,
-      hraAllowance: 800,
-      sugartownSweetAllowance: 350,
-      transportAllowance: 220,
-      overtimeHourlyRate: 28,
+      baseSalary: 39000,
+      hraAllowance: 8000,
+      sugartownSweetAllowance: 3500,
+      transportAllowance: 2200,
+      overtimeHourlyRate: 280,
       taxDeductionsRate: 11,
-      healthInsuranceDeduction: 140
+      healthInsuranceDeduction: 1400
     },
     emergencyContact: {
       name: 'David Lin',
@@ -331,13 +331,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2021-06-01',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 8800,
-      hraAllowance: 1900,
-      sugartownSweetAllowance: 700,
-      transportAllowance: 400,
+      baseSalary: 88000,
+      hraAllowance: 19000,
+      sugartownSweetAllowance: 7000,
+      transportAllowance: 4000,
       overtimeHourlyRate: 0,
       taxDeductionsRate: 17,
-      healthInsuranceDeduction: 260
+      healthInsuranceDeduction: 2600
     },
     emergencyContact: {
       name: 'Rachel Vance',
@@ -366,13 +366,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2023-02-01',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 5100,
-      hraAllowance: 1050,
-      sugartownSweetAllowance: 400,
-      transportAllowance: 280,
-      overtimeHourlyRate: 38,
+      baseSalary: 51000,
+      hraAllowance: 10500,
+      sugartownSweetAllowance: 4000,
+      transportAllowance: 2800,
+      overtimeHourlyRate: 380,
       taxDeductionsRate: 13,
-      healthInsuranceDeduction: 180
+      healthInsuranceDeduction: 1800
     },
     emergencyContact: {
       name: 'Marcus Brooks',
@@ -401,13 +401,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2022-09-15',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 4200,
-      hraAllowance: 850,
-      sugartownSweetAllowance: 380,
-      transportAllowance: 240,
-      overtimeHourlyRate: 30,
+      baseSalary: 42000,
+      hraAllowance: 8500,
+      sugartownSweetAllowance: 3800,
+      transportAllowance: 2400,
+      overtimeHourlyRate: 300,
       taxDeductionsRate: 12,
-      healthInsuranceDeduction: 150
+      healthInsuranceDeduction: 1500
     },
     emergencyContact: {
       name: 'Grace Thorne',
@@ -436,13 +436,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2023-09-01',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 4900,
-      hraAllowance: 1000,
-      sugartownSweetAllowance: 400,
-      transportAllowance: 280,
-      overtimeHourlyRate: 36,
+      baseSalary: 49000,
+      hraAllowance: 10000,
+      sugartownSweetAllowance: 4000,
+      transportAllowance: 2800,
+      overtimeHourlyRate: 360,
       taxDeductionsRate: 13,
-      healthInsuranceDeduction: 175
+      healthInsuranceDeduction: 1750
     },
     emergencyContact: {
       name: 'Ethan Montgomery',
@@ -471,13 +471,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2024-03-10',
     employmentStatus: 'Part-Time',
     salary: {
-      baseSalary: 2800,
-      hraAllowance: 500,
-      sugartownSweetAllowance: 250,
-      transportAllowance: 180,
-      overtimeHourlyRate: 22,
+      baseSalary: 28000,
+      hraAllowance: 5000,
+      sugartownSweetAllowance: 2500,
+      transportAllowance: 1800,
+      overtimeHourlyRate: 220,
       taxDeductionsRate: 9,
-      healthInsuranceDeduction: 110
+      healthInsuranceDeduction: 1100
     },
     emergencyContact: {
       name: 'Sun Kim',
@@ -506,13 +506,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2023-06-20',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 4600,
-      hraAllowance: 950,
-      sugartownSweetAllowance: 380,
-      transportAllowance: 260,
-      overtimeHourlyRate: 32,
+      baseSalary: 46000,
+      hraAllowance: 9500,
+      sugartownSweetAllowance: 3800,
+      transportAllowance: 2600,
+      overtimeHourlyRate: 320,
       taxDeductionsRate: 12,
-      healthInsuranceDeduction: 160
+      healthInsuranceDeduction: 1600
     },
     emergencyContact: {
       name: 'Alexei Rostov',
@@ -541,13 +541,13 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     joiningDate: '2022-11-05',
     employmentStatus: 'Full-Time',
     salary: {
-      baseSalary: 4100,
-      hraAllowance: 820,
-      sugartownSweetAllowance: 350,
-      transportAllowance: 300,
-      overtimeHourlyRate: 29,
+      baseSalary: 41000,
+      hraAllowance: 8200,
+      sugartownSweetAllowance: 3500,
+      transportAllowance: 3000,
+      overtimeHourlyRate: 290,
       taxDeductionsRate: 11,
-      healthInsuranceDeduction: 145
+      healthInsuranceDeduction: 1450
     },
     emergencyContact: {
       name: 'Amina Hassan',
@@ -810,27 +810,27 @@ export const INITIAL_PAYROLL_RECORDS: PayrollRecord[] = [
     designation: 'Lead Confectioner & Senior Barista',
     department: 'Kitchen & Barista',
     locationName: 'Sugartown Candy Café',
-    bankAccountMasked: '•••• •••• •••• 4892 (Chase NYC)',
+    bankAccountMasked: '•••• •••• •••• 4892 (HDFC Bank - FC Road)',
     workingDays: 22,
     presentDays: 22,
     leaveDays: 0,
     absentDays: 0,
     overtimeHours: 6.5,
     earnings: {
-      basic: 3900,
-      hra: 800,
-      confectioneryAllowance: 350,
-      transport: 220,
-      overtimePay: 182,
-      incentivesBonus: 300
+      basic: 39000,
+      hra: 8000,
+      confectioneryAllowance: 3500,
+      transport: 2200,
+      overtimePay: 1820,
+      incentivesBonus: 3000
     },
     deductions: {
-      incomeTax: 575,
+      incomeTax: 5750,
       unpaidLeaveDeduction: 0,
-      healthInsurance: 140,
-      providentFund: 280
+      healthInsurance: 1400,
+      providentFund: 2800
     },
-    netSalary: 4757,
+    netSalary: 47570,
     status: 'Processed',
     paymentDate: '2026-09-30',
     transactionRef: 'SUGAR-TXN-90214-ML'
@@ -843,27 +843,27 @@ export const INITIAL_PAYROLL_RECORDS: PayrollRecord[] = [
     designation: 'Store & Café General Manager',
     department: 'Retail & Store Operations',
     locationName: 'Sugartown Candy Café',
-    bankAccountMasked: '•••• •••• •••• 8812 (Citibank)',
+    bankAccountMasked: '•••• •••• •••• 8812 (ICICI Bank - Shivaji Nagar)',
     workingDays: 22,
     presentDays: 21,
     leaveDays: 1,
     absentDays: 0,
     overtimeHours: 8,
     earnings: {
-      basic: 5200,
-      hra: 1100,
-      confectioneryAllowance: 450,
-      transport: 300,
-      overtimePay: 320,
-      incentivesBonus: 450
+      basic: 52000,
+      hra: 11000,
+      confectioneryAllowance: 4500,
+      transport: 3000,
+      overtimePay: 3200,
+      incentivesBonus: 4500
     },
     deductions: {
-      incomeTax: 980,
+      incomeTax: 7800,
       unpaidLeaveDeduction: 0,
-      healthInsurance: 190,
-      providentFund: 420
+      healthInsurance: 1900,
+      providentFund: 3640
     },
-    netSalary: 6230,
+    netSalary: 61860,
     status: 'Processed',
     paymentDate: '2026-09-30',
     transactionRef: 'SUGAR-TXN-90215-MR'
@@ -876,27 +876,27 @@ export const INITIAL_PAYROLL_RECORDS: PayrollRecord[] = [
     designation: 'Master Fudge & Caramel Artisan',
     department: 'Confectionery Production',
     locationName: 'Artisan Confectionery Factory',
-    bankAccountMasked: '•••• •••• •••• 3144 (Wells Fargo)',
+    bankAccountMasked: '•••• •••• •••• 3144 (State Bank of India - Bund Garden)',
     workingDays: 22,
     presentDays: 20,
     leaveDays: 2,
     absentDays: 0,
     overtimeHours: 12,
     earnings: {
-      basic: 4200,
-      hra: 850,
-      confectioneryAllowance: 380,
-      transport: 240,
-      overtimePay: 360,
-      incentivesBonus: 400
+      basic: 42000,
+      hra: 8500,
+      confectioneryAllowance: 3800,
+      transport: 2400,
+      overtimePay: 3600,
+      incentivesBonus: 4000
     },
     deductions: {
-      incomeTax: 680,
+      incomeTax: 5800,
       unpaidLeaveDeduction: 0,
-      healthInsurance: 150,
-      providentFund: 310
+      healthInsurance: 1500,
+      providentFund: 2940
     },
-    netSalary: 5290,
+    netSalary: 54060,
     status: 'Processed',
     paymentDate: '2026-09-30',
     transactionRef: 'SUGAR-TXN-90216-LT'
@@ -909,27 +909,27 @@ export const INITIAL_PAYROLL_RECORDS: PayrollRecord[] = [
     designation: 'Store Manager - Broadway Flagship',
     department: 'Retail & Store Operations',
     locationName: 'Downtown Flagship Store',
-    bankAccountMasked: '•••• •••• •••• 9011 (Bank of America)',
+    bankAccountMasked: '•••• •••• •••• 9011 (Axis Bank - Koregaon Park)',
     workingDays: 22,
     presentDays: 22,
     leaveDays: 0,
     absentDays: 0,
     overtimeHours: 4,
     earnings: {
-      basic: 5100,
-      hra: 1050,
-      confectioneryAllowance: 400,
-      transport: 280,
-      overtimePay: 152,
-      incentivesBonus: 500
+      basic: 51000,
+      hra: 10500,
+      confectioneryAllowance: 4000,
+      transport: 2800,
+      overtimePay: 1520,
+      incentivesBonus: 5000
     },
     deductions: {
-      incomeTax: 910,
+      incomeTax: 7600,
       unpaidLeaveDeduction: 0,
-      healthInsurance: 180,
-      providentFund: 390
+      healthInsurance: 1800,
+      providentFund: 3570
     },
-    netSalary: 6002,
+    netSalary: 61850,
     status: 'Processed',
     paymentDate: '2026-09-30',
     transactionRef: 'SUGAR-TXN-90217-SB'

@@ -175,51 +175,51 @@ export const OfficialPayslipModal: React.FC<OfficialPayslipModalProps> = ({
               <thead>
                 <tr className="bg-[#EDEAD9]/60 border-b border-[#E5E0D2] font-bold text-[#201D1A]">
                   <th className="p-3 w-1/2">Earnings Description</th>
-                  <th className="p-3 text-right">Amount (USD)</th>
+                  <th className="p-3 text-right">Amount (₹ / INR)</th>
                   <th className="p-3 w-1/2 border-l border-[#E5E0D2]">Statutory & Other Deductions</th>
-                  <th className="p-3 text-right">Amount (USD)</th>
+                  <th className="p-3 text-right">Amount (₹ / INR)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EDEAD9] text-[#201D1A]">
                 <tr>
                   <td className="p-3 font-medium">Basic Pay</td>
-                  <td className="p-3 text-right font-mono font-semibold">${payslip.earnings.basic.toLocaleString()}</td>
+                  <td className="p-3 text-right font-mono font-semibold">₹{payslip.earnings.basic.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">Provident Fund (PF Contribution)</td>
-                  <td className="p-3 text-right font-mono text-[#6B655D]">${payslip.deductions.providentFund}</td>
+                  <td className="p-3 text-right font-mono text-[#6B655D]">₹{payslip.deductions.providentFund.toLocaleString('en-IN')}</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-medium">House Rent Allowance (HRA)</td>
-                  <td className="p-3 text-right font-mono font-semibold">${payslip.earnings.hra}</td>
+                  <td className="p-3 text-right font-mono font-semibold">₹{payslip.earnings.hra.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">Employee Health Insurance / ESI</td>
-                  <td className="p-3 text-right font-mono text-[#6B655D]">${payslip.deductions.healthInsurance}</td>
+                  <td className="p-3 text-right font-mono text-[#6B655D]">₹{payslip.deductions.healthInsurance.toLocaleString('en-IN')}</td>
                 </tr>
                 <tr className="bg-[#FEF4ED]/40">
                   <td className="p-3 font-bold text-[#E66A1F]">
                     Sugartown Sweet & Treat Allowance
                   </td>
                   <td className="p-3 text-right font-mono font-bold text-[#E66A1F]">
-                    ${payslip.earnings.confectioneryAllowance}
+                    ₹{payslip.earnings.confectioneryAllowance.toLocaleString('en-IN')}
                   </td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">Income Tax Withholding / TDS</td>
-                  <td className="p-3 text-right font-mono text-[#6B655D]">${payslip.deductions.incomeTax}</td>
+                  <td className="p-3 text-right font-mono text-[#6B655D]">₹{payslip.deductions.incomeTax.toLocaleString('en-IN')}</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-medium">
                     Overtime Pay ({payslip.overtimeHours} hrs @ 1.5x)
                   </td>
-                  <td className="p-3 text-right font-mono font-semibold">${payslip.earnings.overtimePay}</td>
+                  <td className="p-3 text-right font-mono font-semibold">₹{payslip.earnings.overtimePay.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">Unpaid Leave Deductions</td>
-                  <td className="p-3 text-right font-mono text-[#6B655D]">${payslip.deductions.unpaidLeaveDeduction}</td>
+                  <td className="p-3 text-right font-mono text-[#6B655D]">₹{payslip.deductions.unpaidLeaveDeduction.toLocaleString('en-IN')}</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-medium">Transit Stipend</td>
-                  <td className="p-3 text-right font-mono font-semibold">${payslip.earnings.transport}</td>
+                  <td className="p-3 text-right font-mono font-semibold">₹{payslip.earnings.transport.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">-</td>
                   <td className="p-3 text-right font-mono text-[#6B655D]">-</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-medium">Performance / Festival Incentive</td>
-                  <td className="p-3 text-right font-mono font-semibold">${payslip.earnings.incentivesBonus}</td>
+                  <td className="p-3 text-right font-mono font-semibold">₹{payslip.earnings.incentivesBonus.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-medium border-l border-[#E5E0D2]">-</td>
                   <td className="p-3 text-right font-mono text-[#6B655D]">-</td>
                 </tr>
@@ -228,11 +228,11 @@ export const OfficialPayslipModal: React.FC<OfficialPayslipModalProps> = ({
                 <tr className="bg-[#FAF8F2] border-t-2 border-[#E5E0D2] font-bold text-xs">
                   <td className="p-3 text-[#201D1A]">Gross Earnings</td>
                   <td className="p-3 text-right font-mono text-sm text-[#201D1A]">
-                    ${grossEarnings.toLocaleString()}
+                    ₹{grossEarnings.toLocaleString('en-IN')}
                   </td>
                   <td className="p-3 border-l border-[#E5E0D2] text-[#6B655D]">Total Deductions</td>
                   <td className="p-3 text-right font-mono text-sm text-red-600">
-                    -${totalDeductions.toLocaleString()}
+                    -₹{totalDeductions.toLocaleString('en-IN')}
                   </td>
                 </tr>
               </tfoot>
@@ -251,10 +251,10 @@ export const OfficialPayslipModal: React.FC<OfficialPayslipModalProps> = ({
             </div>
             <div className="sm:text-right">
               <span className="font-mono text-2xl font-black text-[#201D1A] tracking-tight block">
-                ${payslip.netSalary.toLocaleString()}.00
+                ₹{payslip.netSalary.toLocaleString('en-IN')}
               </span>
               <span className="text-[10px] text-[#396B5A] font-semibold">
-                USD (United States Dollars)
+                INR (Indian Rupees - ₹)
               </span>
             </div>
           </div>

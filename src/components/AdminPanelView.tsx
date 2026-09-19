@@ -22,7 +22,7 @@ import {
   ChevronLeft,
   ShieldAlert,
   Sliders,
-  DollarSign,
+  IndianRupee,
   Activity,
   FileCheck,
   FileText,
@@ -98,7 +98,7 @@ export const AdminPanelView: React.FC = () => {
   const [newStaffDesignation, setNewStaffDesignation] = useState('Store Executive');
   const [newStaffDepartment, setNewStaffDepartment] = useState<Employee['department']>('Store Operations');
   const [newStaffLocation, setNewStaffLocation] = useState('Brooklyn Candy Café & Espresso Bar');
-  const [newStaffSalary, setNewStaffSalary] = useState(3800);
+  const [newStaffSalary, setNewStaffSalary] = useState(38000);
 
   // Staff Removal / Offboarding State
   const [staffToRemove, setStaffToRemove] = useState<Employee | null>(null);
@@ -118,9 +118,9 @@ export const AdminPanelView: React.FC = () => {
   // ----------------------------------------------------
   const [selectedPayEmpId, setSelectedPayEmpId] = useState(employees[0]?.id || 'ST-1001');
   const [payMonth, setPayMonth] = useState('October 2026');
-  const [payBonus, setPayBonus] = useState(450);
+  const [payBonus, setPayBonus] = useState(4500);
   const [payOvertimeHours, setPayOvertimeHours] = useState(8);
-  const [paySweetAllowance, setPaySweetAllowance] = useState(400);
+  const [paySweetAllowance, setPaySweetAllowance] = useState(4000);
   const [payrollSuccessMsg, setPayrollSuccessMsg] = useState('');
   const [selectedPayslipModal, setSelectedPayslipModal] = useState<PayrollRecord | null>(null);
 
@@ -849,10 +849,10 @@ export const AdminPanelView: React.FC = () => {
                           <td className="p-3">
                             <div className="space-y-0.5">
                               <span className="font-bold text-[#201D1A] block">
-                                ${emp.salary.baseSalary.toLocaleString()} Basic
+                                ₹{emp.salary.baseSalary.toLocaleString('en-IN')} Basic
                               </span>
                               <span className="text-[10px] text-[#6B655D]">
-                                +${(emp.salary.hra || emp.salary.hraAllowance || 0).toLocaleString()} HRA · ${emp.salary.overtimeRate || emp.salary.overtimeHourlyRate || 25}/hr OT
+                                +₹{(emp.salary.hra || emp.salary.hraAllowance || 0).toLocaleString('en-IN')} HRA · ₹{emp.salary.overtimeRate || emp.salary.overtimeHourlyRate || 280}/hr OT
                               </span>
                             </div>
                           </td>
@@ -1003,7 +1003,7 @@ export const AdminPanelView: React.FC = () => {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary ($)</label>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary (₹ / INR)</label>
                         <input
                           type="number"
                           required
@@ -1014,7 +1014,7 @@ export const AdminPanelView: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block font-bold text-[#201D1A] mb-1">Monthly HRA ($)</label>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly HRA (₹ / INR)</label>
                         <input
                           type="number"
                           required
@@ -1315,7 +1315,7 @@ export const AdminPanelView: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary ($)</label>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary (₹ / INR)</label>
                         <input
                           type="number"
                           required
@@ -1427,7 +1427,7 @@ export const AdminPanelView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#201D1A] mb-1">Sweet Allowance ($)</label>
+                  <label className="block font-bold text-[#201D1A] mb-1">Sweet Allowance (₹ / INR)</label>
                   <input
                     id="admin-payroll-sweet-allowance-input"
                     type="number"
@@ -1449,7 +1449,7 @@ export const AdminPanelView: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#201D1A] mb-1">Incentive / Bonus ($)</label>
+                  <label className="block font-bold text-[#201D1A] mb-1">Incentive / Bonus (₹ / INR)</label>
                   <input
                     id="admin-payroll-bonus-input"
                     type="number"
@@ -1500,10 +1500,10 @@ export const AdminPanelView: React.FC = () => {
                           <div className="font-bold text-[#201D1A]">{pay.employeeName}</div>
                           <div className="text-[10px] text-[#6B655D]">{pay.designation} · {pay.employeeId}</div>
                         </td>
-                        <td className="p-3 font-mono">${pay.earnings.basic.toLocaleString()}</td>
-                        <td className="p-3 font-mono font-bold text-[#E66A1F]">+${pay.earnings.confectioneryAllowance}</td>
-                        <td className="p-3 font-mono">{pay.overtimeHours} hrs (+${pay.earnings.overtimePay})</td>
-                        <td className="p-3 font-mono font-black text-[#396B5A]">${pay.netSalary.toLocaleString()}</td>
+                        <td className="p-3 font-mono">₹{pay.earnings.basic.toLocaleString('en-IN')}</td>
+                        <td className="p-3 font-mono font-bold text-[#E66A1F]">+₹{pay.earnings.confectioneryAllowance.toLocaleString('en-IN')}</td>
+                        <td className="p-3 font-mono">{pay.overtimeHours} hrs (+₹{pay.earnings.overtimePay.toLocaleString('en-IN')})</td>
+                        <td className="p-3 font-mono font-black text-[#396B5A]">₹{pay.netSalary.toLocaleString('en-IN')}</td>
                         <td className="p-3">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                             pay.status === 'Paid' ? 'bg-[#EEF7F4] text-[#396B5A]' : 'bg-[#FEF4ED] text-[#E66A1F]'

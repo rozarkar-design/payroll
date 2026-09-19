@@ -24,7 +24,7 @@ import {
   Phone,
   Hash,
   Briefcase,
-  DollarSign,
+  IndianRupee,
   Award,
   CreditCard,
   Mail
@@ -669,7 +669,7 @@ export const EmployeePortalView: React.FC = () => {
                         {pay.month}
                       </span>
                       <h4 className="font-black text-lg text-[#201D1A] font-display">
-                        ${pay.netSalary.toLocaleString()}
+                        ₹{pay.netSalary.toLocaleString('en-IN')}
                       </h4>
                       <span className="text-[11px] text-[#6B655D]">Net Direct Deposit</span>
                     </div>
@@ -682,15 +682,15 @@ export const EmployeePortalView: React.FC = () => {
                   <div className="space-y-1.5 text-xs text-[#6B655D] border-t border-[#EDEAD9] pt-3">
                     <div className="flex justify-between">
                       <span>Basic Salary</span>
-                      <span className="font-mono text-[#201D1A]">${pay.earnings.basic.toLocaleString()}</span>
+                      <span className="font-mono text-[#201D1A]">₹{pay.earnings.basic.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Sugartown Sweet Allowance 🍬</span>
-                      <span className="font-mono font-bold text-[#E66A1F]">+${pay.earnings.confectioneryAllowance}</span>
+                      <span className="font-mono font-bold text-[#E66A1F]">+₹{pay.earnings.confectioneryAllowance.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Total Deductions</span>
-                      <span className="font-mono text-red-700">-${(pay.deductions.incomeTax + pay.deductions.healthInsurance + pay.deductions.providentFund).toLocaleString()}</span>
+                      <span className="font-mono text-red-700">-₹{(pay.deductions.incomeTax + pay.deductions.healthInsurance + pay.deductions.providentFund).toLocaleString('en-IN')}</span>
                     </div>
                   </div>
 
@@ -968,40 +968,40 @@ export const EmployeePortalView: React.FC = () => {
               <div className="flex items-center gap-2 pb-3 border-b border-[#EDEAD9]">
                 <CreditCard className="w-4 h-4 text-[#396B5A]" />
                 <h3 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
-                  My Salary Structure
+                  My Salary Structure (INR - ₹)
                 </h3>
               </div>
 
               <div className="space-y-2.5 text-xs">
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">Basic Monthly Salary</span>
-                  <span className="font-bold text-[#201D1A]">${emp.salary.baseSalary.toLocaleString()}</span>
+                  <span className="font-bold text-[#201D1A]">₹{emp.salary.baseSalary.toLocaleString('en-IN')}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">House Rent Allowance (HRA)</span>
-                  <span className="font-bold text-[#201D1A]">${(emp.salary.hra ?? 0).toLocaleString()}</span>
+                  <span className="font-bold text-[#201D1A]">₹{(emp.salary.hraAllowance ?? emp.salary.hra ?? 0).toLocaleString('en-IN')}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">Sugartown Special Allowance</span>
-                  <span className="font-bold text-[#201D1A]">${(emp.salary.allowances ?? 0).toLocaleString()}</span>
+                  <span className="font-bold text-[#201D1A]">₹{(emp.salary.sugartownSweetAllowance ?? emp.salary.allowances ?? 0).toLocaleString('en-IN')}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">Overtime Rate</span>
-                  <span className="font-bold text-[#396B5A]">${emp.salary.overtimeRate} / hour</span>
+                  <span className="font-bold text-[#396B5A]">₹{emp.salary.overtimeHourlyRate ?? emp.salary.overtimeRate ?? 280} / hour</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">Estimated Deductions (PF/Tax)</span>
-                  <span className="font-bold text-red-600">-$340</span>
+                  <span className="font-bold text-red-600">-₹{(Math.round(emp.salary.baseSalary * 0.12 + (emp.salary.healthInsuranceDeduction || 1500))).toLocaleString('en-IN')}</span>
                 </div>
 
                 <div className="pt-2 flex justify-between items-center text-sm font-bold bg-[#EEF7F4] p-2.5 rounded-xl border border-[#A4CDBD]/40">
                   <span className="text-[#396B5A]">Est. Net Take-Home</span>
                   <span className="text-[#396B5A]">
-                    ${(emp.salary.baseSalary + (emp.salary.hra ?? 0) + (emp.salary.allowances ?? 0) - 340).toLocaleString()} / mo
+                    ₹{(emp.salary.baseSalary + (emp.salary.hraAllowance ?? emp.salary.hra ?? 0) + (emp.salary.sugartownSweetAllowance ?? emp.salary.allowances ?? 0) - Math.round(emp.salary.baseSalary * 0.12 + (emp.salary.healthInsuranceDeduction || 1500))).toLocaleString('en-IN')} / mo
                   </span>
                 </div>
               </div>

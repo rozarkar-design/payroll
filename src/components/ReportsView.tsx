@@ -7,7 +7,7 @@ import {
   PieChart,
   Calendar,
   Users,
-  DollarSign,
+  IndianRupee,
   Clock,
   Printer,
   Sparkles
@@ -39,7 +39,7 @@ export const ReportsView: React.FC = () => {
   }, {} as Record<string, number>);
 
   const exportReport = (reportName: string) => {
-    const csvContent = `data:text/csv;charset=utf-8,Report,${reportName}\nDate,${new Date().toISOString()}\nTotal Employees,${totalEmployees}\nMonthly Payroll Expenditure,$${totalPayroll}\nOvertime Logged,${totalOTHours} hrs\nApproved Leave Days,${totalLeavesTaken}\n`;
+    const csvContent = `data:text/csv;charset=utf-8,Report,${reportName}\nDate,${new Date().toISOString()}\nTotal Employees,${totalEmployees}\nMonthly Payroll Expenditure,₹${totalPayroll}\nOvertime Logged,${totalOTHours} hrs\nApproved Leave Days,${totalLeavesTaken}\n`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
@@ -84,7 +84,7 @@ export const ReportsView: React.FC = () => {
         <div className="p-4 bg-white rounded-2xl border border-[#E5E0D2] shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B655D]">Labor Expenditure</span>
           <p className="text-2xl font-black text-[#201D1A] font-display mt-1">
-            ${totalPayroll.toLocaleString()}
+            ₹{totalPayroll.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-[#396B5A]">Monthly base + allowances</span>
         </div>
@@ -197,7 +197,7 @@ export const ReportsView: React.FC = () => {
             <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B655D]">
               Department Monthly Base Salary Weight
             </h3>
-            <span className="text-xs text-[#396B5A] font-bold">Total: ${totalPayroll.toLocaleString()}</span>
+            <span className="text-xs text-[#396B5A] font-bold">Total: ₹{totalPayroll.toLocaleString('en-IN')}</span>
           </div>
 
           <div className="space-y-3">
@@ -207,7 +207,7 @@ export const ReportsView: React.FC = () => {
                 <div key={dept} className="p-3.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9]">
                   <div className="flex justify-between text-xs font-bold mb-1.5">
                     <span className="text-[#201D1A]">{dept}</span>
-                    <span className="text-[#E66A1F]">${cost.toLocaleString()} ({pct}%)</span>
+                    <span className="text-[#E66A1F]">₹{cost.toLocaleString('en-IN')} ({pct}%)</span>
                   </div>
                   <div className="w-full bg-white h-2 rounded-full overflow-hidden border border-[#EDEAD9]">
                     <div className="bg-[#E66A1F] h-full rounded-full" style={{ width: `${pct}%` }} />

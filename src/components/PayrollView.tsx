@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   CreditCard,
-  DollarSign,
+  IndianRupee,
   FileText,
   Clock,
   Sparkles,
@@ -116,10 +116,10 @@ export const PayrollView: React.FC = () => {
             <span className="text-[10px] font-bold uppercase tracking-wider">
               {currentRole === 'employee' ? 'My Net Take-Home' : 'Total Net Disbursement'}
             </span>
-            <DollarSign className="w-4 h-4 text-[#396B5A]" />
+            <IndianRupee className="w-4 h-4 text-[#396B5A]" />
           </div>
           <p className="text-2xl font-black text-[#201D1A] font-display">
-            ${totalPayrollCost.toLocaleString()}
+            ₹{totalPayrollCost.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-[#396B5A] block mt-1">Direct deposit ready</span>
         </div>
@@ -130,7 +130,7 @@ export const PayrollView: React.FC = () => {
             <Clock className="w-4 h-4 text-[#E66A1F]" />
           </div>
           <p className="text-2xl font-black text-[#201D1A] font-display">
-            ${totalOvertimeCost.toLocaleString()}
+            ₹{totalOvertimeCost.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-[#6B655D] block mt-1">{totalOvertimeHours} hours logged</span>
         </div>
@@ -141,7 +141,7 @@ export const PayrollView: React.FC = () => {
             <Sparkles className="w-4 h-4 text-[#E66A1F]" />
           </div>
           <p className="text-2xl font-black text-[#201D1A] font-display">
-            ${totalBonusPaid.toLocaleString()}
+            ₹{totalBonusPaid.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-[#E66A1F] block mt-1">Store sales incentives</span>
         </div>
@@ -202,19 +202,19 @@ export const PayrollView: React.FC = () => {
                     </td>
                     <td className="py-3 px-4 text-[#6B655D] font-medium">{record.locationName}</td>
                     <td className="py-3 px-4 font-mono font-medium text-[#201D1A]">
-                      ${record.earnings.basic.toLocaleString()}
+                      ₹{record.earnings.basic.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4 font-mono text-[#201D1A]">
-                      +${totalAllowances.toLocaleString()}
+                      +₹{totalAllowances.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4 font-mono text-[#396B5A]">
-                      +${totalExtra.toLocaleString()}
+                      +₹{totalExtra.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4 font-mono text-[#C2541A]">
-                      -${totalDeductions.toLocaleString()}
+                      -₹{totalDeductions.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4 font-mono font-black text-sm text-[#201D1A]">
-                      ${record.netSalary.toLocaleString()}
+                      ₹{record.netSalary.toLocaleString('en-IN')}
                     </td>
                     <td className="py-3 px-4">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${

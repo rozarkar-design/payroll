@@ -26,7 +26,7 @@ import {
   Upload,
   Paperclip,
   Trash2,
-  DollarSign,
+  IndianRupee,
   Calendar,
   ShieldCheck,
   FileCheck,
@@ -90,11 +90,11 @@ const IQ_QUESTIONS: IQQuestion[] = [
   },
   {
     id: 6,
-    question: 'A customer receives a 20% discount on a $50 luxury hamper. How much do they pay before tax?',
+    question: 'A customer receives a 20% discount on a ₹500 luxury sweet hamper. How much do they pay before tax?',
     category: 'Quantitative Reasoning',
-    options: ['$35', '$40', '$42', '$45'],
+    options: ['₹350', '₹400', '₹420', '₹450'],
     correctIndex: 1,
-    explanation: '20% of $50 is $10. $50 - $10 = $40.'
+    explanation: '20% of ₹500 is ₹100. ₹500 - ₹100 = ₹400.'
   },
   {
     id: 7,
@@ -179,7 +179,7 @@ export const JobApplicationView: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [qualification, setQualification] = useState<string>("Bachelor's Degree");
   const [experience, setExperience] = useState('2 years in boutique retail / hospitality');
-  const [expectedSalary, setExpectedSalary] = useState<string>('$3,800 / month');
+  const [expectedSalary, setExpectedSalary] = useState<string>('₹38,000 / month');
   const [noticePeriod, setNoticePeriod] = useState<string>('Immediate (within 7 days)');
   const [currentCity, setCurrentCity] = useState<string>('New York, NY');
   const [linkedinUrl, setLinkedinUrl] = useState<string>('');
@@ -809,7 +809,7 @@ export const JobApplicationView: React.FC = () => {
                           type="text"
                           value={expectedSalary}
                           onChange={(e) => setExpectedSalary(e.target.value)}
-                          placeholder="e.g. $3,800 / month"
+                          placeholder="e.g. ₹38,000 / month"
                           className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
                         />
                       </div>
