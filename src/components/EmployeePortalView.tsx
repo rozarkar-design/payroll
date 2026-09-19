@@ -17,6 +17,7 @@ import {
   LogOut,
   Camera,
   ChevronRight,
+  ChevronLeft,
   ShieldCheck,
   Building,
   User,
@@ -178,6 +179,20 @@ export const EmployeePortalView: React.FC = () => {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl border border-[#E5E0D2] shadow-xl p-8 space-y-6">
+          <div className="flex items-center justify-between">
+            <button
+              id="employee-login-back-btn"
+              onClick={() => setActiveTab('dashboard')}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-[#6B655D] hover:text-[#201D1A] transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Dashboard</span>
+            </button>
+            <span className="text-[10px] font-bold text-[#396B5A] bg-[#EEF7F4] px-2 py-0.5 rounded-full">
+              Staff Portal
+            </span>
+          </div>
+
           <div className="text-center space-y-2">
             <div className="flex justify-center">
               <SugartownLogo size="lg" showBadge={false} />
@@ -307,6 +322,16 @@ export const EmployeePortalView: React.FC = () => {
               <span className="text-[10px] text-[#6B655D] leading-tight">On-Time Streak</span>
             </div>
           </div>
+
+          <button
+            id="employee-dashboard-return-btn"
+            onClick={() => setActiveTab('dashboard')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#EDEAD9] hover:bg-[#E5E0D2] text-xs font-semibold text-[#201D1A] transition-colors"
+            title="Return to Main Dashboard"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </button>
 
           <button
             id="employee-switch-btn"

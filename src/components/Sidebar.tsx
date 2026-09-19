@@ -10,7 +10,6 @@ import {
   Award,
   Megaphone,
   BarChart3,
-  Smartphone,
   ShieldCheck,
   UserCheck,
   Brain
@@ -80,8 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, onCloseMobile }) =
     { id: 'recruitment', label: 'Recruitment', icon: Briefcase, minRole: 'manager_plus' },
     { id: 'performance', label: 'Performance & Badges', icon: Award, minRole: 'all' },
     { id: 'communication', label: 'Announcements', icon: Megaphone, minRole: 'all' },
-    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3, minRole: 'manager_plus' },
-    { id: 'mobile_view', label: 'Staff Mobile Mode', icon: Smartphone, minRole: 'all' }
+    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3, minRole: 'manager_plus' }
   ];
 
   const isAccessible = (item: NavItem) => {

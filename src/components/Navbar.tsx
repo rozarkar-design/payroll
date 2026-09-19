@@ -3,8 +3,6 @@ import {
   Candy, 
   Search, 
   Bell, 
-  Smartphone, 
-  Monitor, 
   RotateCcw, 
   ShieldCheck, 
   MapPin, 
@@ -138,30 +136,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenQuickAction, onOpenAuditLo
 
           {/* Right Controls: Quick Actions, Role Switcher, Mobile Mode, User */}
           <div className="flex items-center gap-2 sm:gap-3">
-
-            {/* Mobile View Toggle Button */}
-            <button
-              id="toggle-employee-mobile-view-btn"
-              onClick={() => setActiveTab(activeTab === 'mobile_view' ? 'dashboard' : 'mobile_view')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                activeTab === 'mobile_view'
-                  ? 'bg-[#E66A1F] text-white shadow-sm shadow-[#E66A1F]/30'
-                  : 'bg-[#EDEAD9] text-[#201D1A] hover:bg-[#E5E0D2]'
-              }`}
-              title="Toggle Staff Mobile Phone View"
-            >
-              {activeTab === 'mobile_view' ? (
-                <>
-                  <Monitor className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Desktop Suite</span>
-                </>
-              ) : (
-                <>
-                  <Smartphone className="w-3.5 h-3.5 text-[#E66A1F]" />
-                  <span className="hidden sm:inline">Staff Mobile App</span>
-                </>
-              )}
-            </button>
 
             {/* Employee Portal Access Button */}
             <button

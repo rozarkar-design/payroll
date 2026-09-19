@@ -21,6 +21,7 @@ import {
   ArrowUpRight
 } from 'lucide-react';
 import { useHRMS } from '../context/HRMSContext';
+import { DashboardPortalGateway } from './DashboardPortalGateway';
 
 interface DashboardViewProps {
   onOpenQuickAction: (action: 'checkin' | 'leave' | 'payslip' | 'employee' | 'announcement') => void;
@@ -83,7 +84,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onOpenQuickAction,
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
 
-      {/* Top Banner: Greeting + Sugartown Touch */}
+      {/* Main Dashboard Portal Gateway: Employee Login, Admin Login & Apply Job (First UI) */}
+      <DashboardPortalGateway />
+
+      {/* Sugartown Confectionery Operations Banner */}
       <div className="rounded-3xl bg-gradient-to-r from-[#EDEAD9] via-[#FAF8F2] to-[#FEF4ED] border border-[#E5E0D2] p-6 sm:p-8 relative overflow-hidden shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">

@@ -19,6 +19,7 @@ import {
   RefreshCw,
   LogOut,
   ChevronRight,
+  ChevronLeft,
   ShieldAlert,
   Sliders,
   DollarSign,
@@ -39,6 +40,7 @@ import { useHRMS } from '../context/HRMSContext';
 import { SugartownLogo } from './SugartownLogo';
 import { SUGARTOWN_CORPORATE_INFO } from '../corporateInfo';
 import { OfficialPayslipModal } from './OfficialPayslipModal';
+import { HiringDocsAdminView } from './HiringDocsAdminView';
 import { Employee, LeaveRequest, PayrollRecord, EmployeeDocument } from '../types';
 
 export const AdminPanelView: React.FC = () => {
@@ -73,7 +75,7 @@ export const AdminPanelView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Admin Console tabs
-  const [adminTab, setAdminTab] = useState<'overview' | 'payroll' | 'leaves' | 'verification' | 'stores' | 'emergency' | 'audit'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'hiring_docs' | 'payroll' | 'leaves' | 'verification' | 'stores' | 'emergency' | 'audit'>('overview');
 
   // Emergency broadcast form state
   const [broadcastTitle, setBroadcastTitle] = useState('');
@@ -212,6 +214,20 @@ export const AdminPanelView: React.FC = () => {
         <div className="max-w-md w-full bg-white rounded-3xl border border-[#E5E0D2] shadow-xl overflow-hidden">
           
           <div className="p-8 text-center bg-gradient-to-b from-[#FAF8F2] to-white border-b border-[#EDEAD9]">
+            <div className="flex items-center justify-between mb-4">
+              <button
+                id="admin-login-back-btn"
+                onClick={() => setActiveTab('dashboard')}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-[#6B655D] hover:text-[#201D1A] transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back to Dashboard</span>
+              </button>
+              <span className="text-[10px] font-bold text-[#E66A1F] bg-[#FEF4ED] px-2 py-0.5 rounded-full">
+                Executive Security
+              </span>
+            </div>
+
             <div className="flex justify-center mb-4">
               <SugartownLogo size="lg" showBadge={false} />
             </div>
@@ -354,6 +370,16 @@ export const AdminPanelView: React.FC = () => {
 
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
           <button
+            id="admin-dashboard-return-btn"
+            onClick={() => setActiveTab('dashboard')}
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-white/10"
+            title="Return to Main Dashboard"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>Dashboard</span>
+          </button>
+
+          <button
             id="admin-export-backup-btn"
             onClick={handleExportFullBackup}
             className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-white/10"
@@ -451,6 +477,20 @@ export const AdminPanelView: React.FC = () => {
           >
             Overview
           </button>
+
+          <button
+            id="admin-tab-hiring-docs-btn"
+            onClick={() => setAdminTab('hiring_docs')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
+              adminTab === 'hiring_docs' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Hiring Docs & Policies</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#FEF4ED] text-[#E66A1F] font-bold">
+              Offer & Welcome
+            </span>
+          </button>
           
           <button
             onClick={() => setAdminTab('payroll')}
@@ -527,7 +567,7 @@ export const AdminPanelView: React.FC = () => {
                 <span>Executive Command Shortcuts</span>
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="p-4 rounded-2xl bg-[#FEF4ED] border border-[#E66A1F]/20 flex flex-col justify-between">
                   <div>
                     <h4 className="text-xs font-bold text-[#201D1A]">Batch Leave Authorization</h4>
@@ -559,9 +599,30 @@ export const AdminPanelView: React.FC = () => {
                   </button>
                 </div>
 
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#FEF4ED] to-[#FAF8F2] border border-[#E66A1F]/40 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-1 text-[#E66A1F] text-[10px] font-bold uppercase mb-0.5">
+                      <Sparkles className="w-3 h-3" />
+                      <span>Letters & Policies</span>
+                    </div>
+                    <h4 className="text-xs font-bold text-[#201D1A]">Hiring Documents Suite</h4>
+                    <p className="text-[11px] text-[#6B655D] mt-1">
+                      Replace candidate name, designation, salary breakup & dispatch official offer/welcome letters.
+                    </p>
+                  </div>
+                  <button
+                    id="admin-overview-open-hiring-docs-btn"
+                    onClick={() => setAdminTab('hiring_docs')}
+                    className="mt-3 px-3 py-1.5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5 shadow-xs"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    <span>Generate & Send</span>
+                  </button>
+                </div>
+
                 <div className="p-4 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9] flex flex-col justify-between">
                   <div>
-                    <h4 className="text-xs font-bold text-[#201D1A]">Backend Document Verification</h4>
+                    <h4 className="text-xs font-bold text-[#201D1A]">Backend Verification</h4>
                     <p className="text-[11px] text-[#6B655D] mt-1">
                       Upload food hygiene permits, W-4 tax forms, and update verification badges.
                     </p>
@@ -619,6 +680,13 @@ export const AdminPanelView: React.FC = () => {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: HIRING DOCUMENTS & POLICIES */}
+        {adminTab === 'hiring_docs' && (
+          <div className="p-6">
+            <HiringDocsAdminView />
           </div>
         )}
 

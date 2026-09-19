@@ -122,7 +122,7 @@ const IQ_QUESTIONS: IQQuestion[] = [
 ];
 
 export const JobApplicationView: React.FC = () => {
-  const { jobOpenings, submitJobApplication, triggerConfetti } = useHRMS();
+  const { jobOpenings, submitJobApplication, triggerConfetti, setActiveTab } = useHRMS();
 
   // Selected Department Filter
   const [selectedDept, setSelectedDept] = useState<string>('All');
@@ -288,7 +288,7 @@ export const JobApplicationView: React.FC = () => {
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Header Banner */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#201D1A] via-[#2D2824] to-[#1A1816] text-white shadow-xl relative overflow-hidden border border-stone-800">
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-[#201D1A] via-[#2D2824] to-[#1A1816] text-white shadow-xl relative overflow-hidden border border-stone-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="max-w-3xl space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#E66A1F]/20 text-[#FF7A29] text-xs font-bold border border-[#E66A1F]/30">
             <Sparkles className="w-3.5 h-3.5" />
@@ -301,6 +301,17 @@ export const JobApplicationView: React.FC = () => {
             Explore open opportunities across <strong>Store Staff, Store Manager, Cluster Manager, Sales, Marketing, Operation, Backend & Corporate</strong>.
             All applications include a standard 10-minute IQ and cognitive logic test (≥ 70% passing threshold).
           </p>
+        </div>
+
+        <div className="shrink-0">
+          <button
+            id="careers-back-to-dashboard-btn"
+            onClick={() => setActiveTab('dashboard')}
+            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition-colors border border-white/15"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Dashboard</span>
+          </button>
         </div>
       </div>
 
