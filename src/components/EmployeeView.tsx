@@ -18,7 +18,9 @@ import {
   ShieldAlert,
   Flame,
   Download,
-  Eye
+  Eye,
+  Trash2,
+  UserMinus
 } from 'lucide-react';
 import { useHRMS } from '../context/HRMSContext';
 import { Employee, DepartmentType, StoreLocationId, EmploymentStatus } from '../types';
@@ -32,6 +34,8 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
   const {
     employees,
     addEmployee,
+    removeEmployee,
+    isAdminLoggedIn,
     currentRole,
     currentUser,
     locations,
@@ -39,11 +43,18 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
     triggerConfetti
   } = useHRMS();
 
+  const canAdminRemove = isAdminLoggedIn || currentRole === 'super_admin' || currentRole === 'hr_manager';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDept, setSelectedDept] = useState<string>('all');
   const [selectedLocation, setSelectedLocation] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  // Employee Removal State
+  const [employeeToDelete, setEmployeeToDelete] = useState<Employee | null>(null);
+  const [deleteReason, setDeleteReason] = useState<string>('Administrative Offboarding');
+  const [actionFeedback, setActionFeedback] = useState<string>('');
 
   // Selected employee for detail modal
   const [activeEmployee, setActiveEmployee] = useState<Employee | null>(() => {
@@ -221,6 +232,22 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
         </div>
       </div>
 
+      {/* Action Notification Alert */}
+      {actionFeedback && (
+        <div className="p-3.5 rounded-2xl bg-[#EEF7F4] border border-[#396B5A]/30 flex items-center justify-between text-xs text-[#396B5A] animate-in fade-in duration-200">
+          <div className="flex items-center gap-2 font-bold">
+            <CheckCircle2 className="w-4 h-4 text-[#396B5A] shrink-0" />
+            <span>{actionFeedback}</span>
+          </div>
+          <button
+            onClick={() => setActionFeedback('')}
+            className="text-[#396B5A] hover:text-[#2B5244] text-xs font-bold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Filters & Search Toolbar */}
       <div className="bg-white p-3.5 rounded-2xl border border-[#E5E0D2] shadow-2xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
@@ -379,13 +406,31 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
                     )}
                   </div>
 
-                  <button
-                    id={`view-profile-${emp.id}-btn`}
-                    className="text-xs font-bold text-[#E66A1F] group-hover:translate-x-0.5 transition-transform flex items-center gap-1"
-                  >
-                    <span>Inspect Profile</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center justify-between pt-2 border-t border-[#FAF8F2]">
+                    {canAdminRemove && (
+                      <button
+                        id={`card-remove-btn-${emp.id}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEmployeeToDelete(emp);
+                          setDeleteReason('Administrative Offboarding');
+                        }}
+                        className="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                        title={`Remove ${emp.fullName} from directory`}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-red-500" />
+                        <span>Remove</span>
+                      </button>
+                    )}
+
+                    <button
+                      id={`view-profile-${emp.id}-btn`}
+                      className="text-xs font-bold text-[#E66A1F] group-hover:translate-x-0.5 transition-transform flex items-center gap-1 ml-auto"
+                    >
+                      <span>Inspect Profile</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -445,12 +490,29 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <button
-                        id={`table-view-btn-${emp.id}`}
-                        className="px-2.5 py-1 rounded-lg bg-[#EDEAD9] hover:bg-[#E66A1F] hover:text-white text-xs font-bold text-[#201D1A] transition-colors"
-                      >
-                        Inspect
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          id={`table-view-btn-${emp.id}`}
+                          className="px-2.5 py-1 rounded-lg bg-[#EDEAD9] hover:bg-[#E66A1F] hover:text-white text-xs font-bold text-[#201D1A] transition-colors"
+                        >
+                          Inspect
+                        </button>
+
+                        {canAdminRemove && (
+                          <button
+                            id={`table-remove-btn-${emp.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEmployeeToDelete(emp);
+                              setDeleteReason('Administrative Offboarding');
+                            }}
+                            className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition-colors"
+                            title={`Remove ${emp.fullName} from directory`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -761,7 +823,25 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-[#FAF8F2] border-t border-[#E5E0D2] flex justify-end">
+            <div className="p-4 bg-[#FAF8F2] border-t border-[#E5E0D2] flex items-center justify-between">
+              {canAdminRemove ? (
+                <button
+                  id={`modal-remove-emp-btn-${activeEmployee.id}`}
+                  onClick={() => {
+                    const emp = activeEmployee;
+                    setEmployeeToDelete(emp);
+                    setDeleteReason('Administrative Offboarding');
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                  title="Permanently remove employee from company records"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Employee</span>
+                </button>
+              ) : (
+                <div />
+              )}
+
               <button
                 id="close-profile-bottom-btn"
                 onClick={() => setActiveEmployee(null)}
@@ -1021,6 +1101,109 @@ export const EmployeeView: React.FC<EmployeeViewProps> = ({ initialSelectedId })
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* CONFIRMATION MODAL: REMOVE EMPLOYEE */}
+      {employeeToDelete && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl border border-red-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[#EDEAD9]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-[#201D1A] text-sm font-display">
+                    Remove Employee Record
+                  </h4>
+                  <span className="text-[10px] font-extrabold text-red-600 uppercase tracking-wider">
+                    Administrator Action
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setEmployeeToDelete(null)}
+                className="p-1 rounded-lg text-[#6B655D] hover:text-[#201D1A]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center gap-3">
+              <img
+                src={employeeToDelete.avatar}
+                alt={employeeToDelete.fullName}
+                className="w-12 h-12 rounded-xl object-cover border border-[#EDEAD9]"
+              />
+              <div>
+                <p className="font-bold text-sm text-[#201D1A]">{employeeToDelete.fullName}</p>
+                <p className="text-xs text-[#6B655D]">{employeeToDelete.designation} · {employeeToDelete.department}</p>
+                <p className="text-[11px] font-mono text-[#E66A1F]">{employeeToDelete.id} · {employeeToDelete.locationName}</p>
+              </div>
+            </div>
+
+            <div className="text-xs text-[#6B655D] leading-relaxed space-y-2">
+              <p>
+                Are you sure you want to remove <strong className="text-[#201D1A]">{employeeToDelete.fullName}</strong> from Sugartown Retail Pvt. Ltd.?
+              </p>
+              <div className="p-2.5 rounded-xl bg-red-50/70 border border-red-200/60 text-[11px] text-red-700 space-y-1">
+                <p>● Employee portal credentials and mobile shift access will be revoked.</p>
+                <p>● Associated payroll batches and shift schedules will cease generation.</p>
+                <p>● Action will be permanently logged in the Company Audit Trail.</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#201D1A] mb-1">
+                Offboarding Reason / Category:
+              </label>
+              <select
+                id="employee-view-removal-reason-select"
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="w-full text-xs p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] focus:bg-white focus:outline-none focus:border-red-500 font-medium text-[#201D1A]"
+              >
+                <option value="Administrative Offboarding">Administrative Offboarding</option>
+                <option value="Voluntary Resignation">Voluntary Resignation</option>
+                <option value="End of Contract / Seasonal">End of Contract / Seasonal</option>
+                <option value="Involuntary Termination">Involuntary Termination</option>
+                <option value="Relocation / Store Transfer">Relocation / Store Transfer</option>
+                <option value="Other">Other Reasons</option>
+              </select>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+              <button
+                type="button"
+                id="cancel-employee-view-removal-btn"
+                onClick={() => setEmployeeToDelete(null)}
+                className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold text-xs hover:bg-[#FAF8F2]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                id="confirm-employee-view-removal-btn"
+                onClick={() => {
+                  const targetId = employeeToDelete.id;
+                  const res = removeEmployee(targetId, deleteReason);
+                  setEmployeeToDelete(null);
+                  if (activeEmployee?.id === targetId) {
+                    setActiveEmployee(null);
+                  }
+                  if (res.success) {
+                    setActionFeedback(res.message);
+                    setTimeout(() => setActionFeedback(''), 6000);
+                  }
+                }}
+                className="py-2 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Confirm & Remove</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

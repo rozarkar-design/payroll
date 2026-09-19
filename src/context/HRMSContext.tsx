@@ -92,6 +92,7 @@ interface HRMSContextType {
   // Actions
   addEmployee: (employeeData: Omit<Employee, 'id' | 'attendanceStreak' | 'badges'>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  removeEmployee: (id: string, reason?: string) => { success: boolean; message: string };
   
   // Document Management & Backend Verification
   uploadEmployeeDocument: (employeeId: string, doc: { name: string; type: Employee['documents'][0]['type']; size: string }) => void;
@@ -384,6 +385,32 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
     setEmployees(prev => prev.map(emp => emp.id === id ? { ...emp, ...updates } : emp));
     logAction('Updated Employee Profile', `Modified record for ${id}`, 'Employee');
+  };
+
+  const removeEmployee = (id: string, reason?: string) => {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return { success: false, message: 'Employee not found in records.' };
+
+    setEmployees(prev => prev.filter(e => e.id !== id));
+    logAction(
+      'Removed / Offboarded Employee',
+      `Offboarded ${emp.fullName} (${emp.id} - ${emp.designation}) from ${emp.locationName}. Reason: ${reason || 'Administrative offboarding'}`,
+      'Employee'
+    );
+
+    // If active employee portal user was the one removed, clear session
+    if (employeePortalUser?.id === id) {
+      setIsEmployeeLoggedIn(false);
+      const remaining = employees.filter(e => e.id !== id);
+      if (remaining.length > 0) {
+        setEmployeePortalUser(remaining[0]);
+      }
+    }
+
+    return {
+      success: true,
+      message: `Employee ${emp.fullName} (${emp.id}) was successfully removed from Sugartown records.`
+    };
   };
 
   const isEmployeeCheckedIn = (employeeId: string): boolean => {
@@ -971,6 +998,7 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
         auditLogs,
         addEmployee,
         updateEmployee,
+        removeEmployee,
         uploadEmployeeDocument,
         verifyEmployeeDocument,
         checkIn,

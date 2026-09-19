@@ -34,7 +34,9 @@ import {
   Search,
   Building,
   UserCheck,
-  FileBadge
+  FileBadge,
+  Trash2,
+  UserMinus
 } from 'lucide-react';
 import { useHRMS } from '../context/HRMSContext';
 import { SugartownLogo } from './SugartownLogo';
@@ -66,7 +68,8 @@ export const AdminPanelView: React.FC = () => {
     setActiveTab,
     triggerConfetti,
     addEmployee,
-    updateEmployee
+    updateEmployee,
+    removeEmployee
   } = useHRMS();
 
   // Login Form State
@@ -96,6 +99,11 @@ export const AdminPanelView: React.FC = () => {
   const [newStaffDepartment, setNewStaffDepartment] = useState<Employee['department']>('Store Operations');
   const [newStaffLocation, setNewStaffLocation] = useState('Brooklyn Candy Café & Espresso Bar');
   const [newStaffSalary, setNewStaffSalary] = useState(3800);
+
+  // Staff Removal / Offboarding State
+  const [staffToRemove, setStaffToRemove] = useState<Employee | null>(null);
+  const [removalReason, setRemovalReason] = useState('Administrative Offboarding');
+  const [removalNotification, setRemovalNotification] = useState('');
 
   // Emergency broadcast form state
   const [broadcastTitle, setBroadcastTitle] = useState('');
@@ -743,6 +751,22 @@ export const AdminPanelView: React.FC = () => {
               </div>
             </div>
 
+            {/* Removal Success Notification Banner */}
+            {removalNotification && (
+              <div className="p-3.5 rounded-2xl bg-[#EEF7F4] border border-[#396B5A]/30 flex items-center justify-between text-xs text-[#396B5A] animate-in fade-in duration-200">
+                <div className="flex items-center gap-2 font-bold">
+                  <CheckCircle2 className="w-4 h-4 text-[#396B5A] shrink-0" />
+                  <span>{removalNotification}</span>
+                </div>
+                <button
+                  onClick={() => setRemovalNotification('')}
+                  className="text-[#396B5A] hover:text-[#2B5244] text-xs font-bold"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
             {/* Filter and Search Bar */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#FAF8F2] p-3 rounded-2xl border border-[#EDEAD9]">
               <div className="relative flex-1">
@@ -866,6 +890,19 @@ export const AdminPanelView: React.FC = () => {
                               >
                                 Docs
                               </button>
+
+                              <button
+                                id={`remove-staff-btn-${emp.id}`}
+                                onClick={() => {
+                                  setStaffToRemove(emp);
+                                  setRemovalReason('Administrative Offboarding');
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 font-bold text-[11px] border border-red-200 transition-colors flex items-center gap-1"
+                                title={`Remove ${emp.fullName} from Sugartown records`}
+                              >
+                                <Trash2 className="w-3 h-3 text-red-500" />
+                                <span>Remove</span>
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -988,22 +1025,138 @@ export const AdminPanelView: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="pt-3 flex justify-end gap-2">
+                    <div className="pt-3 border-t border-[#EDEAD9] flex items-center justify-between">
                       <button
                         type="button"
-                        onClick={() => setSelectedStaffToEdit(null)}
-                        className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold"
+                        onClick={() => {
+                          const emp = selectedStaffToEdit;
+                          setSelectedStaffToEdit(null);
+                          setStaffToRemove(emp);
+                          setRemovalReason('Administrative Offboarding');
+                        }}
+                        className="py-2 px-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-bold text-xs border border-red-200 flex items-center gap-1.5 transition-colors"
+                        title="Permanently remove employee"
                       >
-                        Cancel
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Offboard / Remove</span>
                       </button>
-                      <button
-                        type="submit"
-                        className="py-2 px-5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white font-bold"
-                      >
-                        Save Changes
-                      </button>
+
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStaffToEdit(null)}
+                          className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="py-2 px-5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white font-bold"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
                     </div>
                   </form>
+                </div>
+              </div>
+            )}
+
+            {/* CONFIRMATION MODAL: REMOVE EMPLOYEE */}
+            {staffToRemove && (
+              <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+                <div className="bg-white rounded-3xl border border-red-200 shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#EDEAD9]">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 border border-red-100">
+                        <Trash2 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#201D1A] text-sm font-display">
+                          Remove Employee Record
+                        </h4>
+                        <span className="text-[10px] font-extrabold text-red-600 uppercase tracking-wider">
+                          Administrator Authorization Required
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setStaffToRemove(null)}
+                      className="p-1 rounded-lg text-[#6B655D] hover:text-[#201D1A]"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <div className="p-3.5 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center gap-3">
+                    <img
+                      src={staffToRemove.avatar}
+                      alt={staffToRemove.fullName}
+                      className="w-12 h-12 rounded-xl object-cover border border-[#EDEAD9]"
+                    />
+                    <div>
+                      <p className="font-bold text-sm text-[#201D1A]">{staffToRemove.fullName}</p>
+                      <p className="text-xs text-[#6B655D]">{staffToRemove.designation} · {staffToRemove.department}</p>
+                      <p className="text-[11px] font-mono text-[#E66A1F]">{staffToRemove.id} · {staffToRemove.locationName}</p>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-[#6B655D] leading-relaxed space-y-2">
+                    <p>
+                      Are you sure you want to remove <strong className="text-[#201D1A]">{staffToRemove.fullName}</strong> from Sugartown Retail Pvt. Ltd.?
+                    </p>
+                    <div className="p-2.5 rounded-xl bg-red-50/70 border border-red-200/60 text-[11px] text-red-700 space-y-1">
+                      <p>● Employee portal credentials and mobile check-in access will be revoked immediately.</p>
+                      <p>● Associated payroll batches and shift schedules will cease generation.</p>
+                      <p>● An entry will be permanently recorded in the Master Audit Log.</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#201D1A] mb-1">
+                      Offboarding Reason / Category:
+                    </label>
+                    <select
+                      id="staff-removal-reason-select"
+                      value={removalReason}
+                      onChange={(e) => setRemovalReason(e.target.value)}
+                      className="w-full text-xs p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] focus:bg-white focus:outline-none focus:border-red-500 font-medium text-[#201D1A]"
+                    >
+                      <option value="Administrative Offboarding">Administrative Offboarding</option>
+                      <option value="Voluntary Resignation">Voluntary Resignation</option>
+                      <option value="End of Contract / Seasonal">End of Contract / Seasonal</option>
+                      <option value="Involuntary Termination">Involuntary Termination</option>
+                      <option value="Relocation / Store Transfer">Relocation / Store Transfer</option>
+                      <option value="Other">Other Reasons</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button
+                      type="button"
+                      id="cancel-staff-removal-btn"
+                      onClick={() => setStaffToRemove(null)}
+                      className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold text-xs hover:bg-[#FAF8F2]"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      id="confirm-staff-removal-btn"
+                      onClick={() => {
+                        const res = removeEmployee(staffToRemove.id, removalReason);
+                        setStaffToRemove(null);
+                        if (res.success) {
+                          setRemovalNotification(res.message);
+                          setTimeout(() => setRemovalNotification(''), 6000);
+                        }
+                      }}
+                      className="py-2 px-5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Confirm & Remove Employee</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
