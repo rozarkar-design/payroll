@@ -1,0 +1,11 @@
+{
+  "name": "Sugartown HRMS",
+  "description": "Modern, crisp and playful HR management system for Sugartown sweets and confectionery brand across multiple stores, factory, and corporate offices.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

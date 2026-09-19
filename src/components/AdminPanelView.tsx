@@ -1,0 +1,1369 @@
+import React, { useState } from 'react';
+import {
+  ShieldCheck,
+  Lock,
+  Unlock,
+  KeyRound,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  Sparkles,
+  Store,
+  Users,
+  CheckCircle2,
+  Clock,
+  CalendarCheck,
+  CreditCard,
+  Download,
+  Megaphone,
+  RefreshCw,
+  LogOut,
+  ChevronRight,
+  ShieldAlert,
+  Sliders,
+  DollarSign,
+  Activity,
+  FileCheck,
+  FileText,
+  Upload,
+  PlusCircle,
+  Check,
+  X,
+  Printer,
+  Search,
+  Building,
+  UserCheck,
+  FileBadge
+} from 'lucide-react';
+import { useHRMS } from '../context/HRMSContext';
+import { SugartownLogo } from './SugartownLogo';
+import { SUGARTOWN_CORPORATE_INFO } from '../corporateInfo';
+import { OfficialPayslipModal } from './OfficialPayslipModal';
+import { Employee, LeaveRequest, PayrollRecord, EmployeeDocument } from '../types';
+
+export const AdminPanelView: React.FC = () => {
+  const {
+    isAdminLoggedIn,
+    adminSession,
+    adminLogin,
+    adminLogout,
+    employees,
+    locations,
+    attendanceRecords,
+    leaveRequests,
+    payrollRecords,
+    auditLogs,
+    batchApproveAllPendingLeaves,
+    reviewLeave,
+    createCustomPayrollRecord,
+    processPayrollBatch,
+    markPayrollPaid,
+    uploadEmployeeDocument,
+    verifyEmployeeDocument,
+    broadcastEmergencyAnnouncement,
+    setActiveTab,
+    triggerConfetti
+  } = useHRMS();
+
+  // Login Form State
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Admin Console tabs
+  const [adminTab, setAdminTab] = useState<'overview' | 'payroll' | 'leaves' | 'verification' | 'stores' | 'emergency' | 'audit'>('overview');
+
+  // Emergency broadcast form state
+  const [broadcastTitle, setBroadcastTitle] = useState('');
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [broadcastSent, setBroadcastSent] = useState(false);
+
+  // Store override state
+  const [storeStatusOverrides, setStoreStatusOverrides] = useState<Record<string, 'Normal' | 'Audit Mode' | 'Special Event'>>({});
+
+  // ----------------------------------------------------
+  // PAYROLL CREATION STATE
+  // ----------------------------------------------------
+  const [selectedPayEmpId, setSelectedPayEmpId] = useState(employees[0]?.id || 'ST-1001');
+  const [payMonth, setPayMonth] = useState('October 2026');
+  const [payBonus, setPayBonus] = useState(450);
+  const [payOvertimeHours, setPayOvertimeHours] = useState(8);
+  const [paySweetAllowance, setPaySweetAllowance] = useState(400);
+  const [payrollSuccessMsg, setPayrollSuccessMsg] = useState('');
+  const [selectedPayslipModal, setSelectedPayslipModal] = useState<PayrollRecord | null>(null);
+
+  // ----------------------------------------------------
+  // LEAVE APPROVAL STATE
+  // ----------------------------------------------------
+  const [leaveFilter, setLeaveFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [leaveReviewComment, setLeaveReviewComment] = useState<Record<string, string>>({});
+
+  // ----------------------------------------------------
+  // BACKEND VERIFICATION & DOCUMENT UPLOAD STATE
+  // ----------------------------------------------------
+  const [selectedDocEmpId, setSelectedDocEmpId] = useState(employees[0]?.id || 'ST-1001');
+  const [docName, setDocName] = useState('');
+  const [docType, setDocType] = useState<EmployeeDocument['type']>('Food Safety License');
+  const [docUploadMsg, setDocUploadMsg] = useState('');
+  const [docSearch, setDocSearch] = useState('');
+
+  const pendingLeaves = leaveRequests.filter(l => l.status === 'pending');
+  const checkedInStaffCount = attendanceRecords.filter(a => a.status === 'present' || a.status === 'late').length;
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setIsSubmitting(true);
+
+    setTimeout(() => {
+      const result = adminLogin(phone, password);
+      setIsSubmitting(false);
+      if (!result.success) {
+        setLoginError(result.error || 'Invalid administrator phone number or password.');
+      } else {
+        setPhone('');
+        setPassword('');
+      }
+    }, 400);
+  };
+
+  const handleBatchApprove = () => {
+    const count = batchApproveAllPendingLeaves();
+    alert(`Successfully authorized and approved ${count} pending leave request(s) with administrative clearance.`);
+  };
+
+  const handleSendBroadcast = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!broadcastTitle.trim() || !broadcastMessage.trim()) return;
+    broadcastEmergencyAnnouncement(broadcastTitle, broadcastMessage);
+    setBroadcastSent(true);
+    setBroadcastTitle('');
+    setBroadcastMessage('');
+    setTimeout(() => setBroadcastSent(false), 4000);
+  };
+
+  const handleExportFullBackup = () => {
+    const backupData = {
+      system: 'Sugartown HRMS Master Export',
+      timestamp: new Date().toISOString(),
+      adminId: adminSession?.phone || '9145448010',
+      totalEmployees: employees.length,
+      employees,
+      locations,
+      attendanceRecords,
+      leaveRequests,
+      payrollRecords,
+      auditLogs
+    };
+
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(backupData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute('href', dataStr);
+    downloadAnchor.setAttribute('download', `sugartown_hrms_master_backup_${Date.now()}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    triggerConfetti();
+  };
+
+  // Create Custom Payroll Handler
+  const handleCreatePayroll = (e: React.FormEvent) => {
+    e.preventDefault();
+    createCustomPayrollRecord({
+      employeeId: selectedPayEmpId,
+      month: payMonth,
+      bonus: Number(payBonus) || 0,
+      overtimeHours: Number(payOvertimeHours) || 0,
+      confectioneryAllowance: Number(paySweetAllowance) || 400
+    });
+    const emp = employees.find(e => e.id === selectedPayEmpId);
+    setPayrollSuccessMsg(`Payroll created and processed for ${emp?.fullName} (${payMonth})!`);
+    setTimeout(() => setPayrollSuccessMsg(''), 4000);
+  };
+
+  // Upload Document Handler
+  const handleUploadDocument = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!docName.trim()) {
+      alert('Please enter a document title.');
+      return;
+    }
+    uploadEmployeeDocument(selectedDocEmpId, {
+      name: docName,
+      type: docType,
+      size: `${(Math.random() * 2 + 1).toFixed(1)} MB`
+    });
+    setDocUploadMsg(`Document "${docName}" successfully uploaded and verified for staff!`);
+    setDocName('');
+    setTimeout(() => setDocUploadMsg(''), 4000);
+  };
+
+  // Selected Employee for Document Management
+  const selectedDocEmployee = employees.find(e => e.id === selectedDocEmpId) || employees[0];
+
+  // ----------------------------------------------------
+  // Unauthenticated: Master Admin Login UI
+  // ----------------------------------------------------
+  if (!isAdminLoggedIn) {
+    return (
+      <div className="min-h-[75vh] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-[#E5E0D2] shadow-xl overflow-hidden">
+          
+          <div className="p-8 text-center bg-gradient-to-b from-[#FAF8F2] to-white border-b border-[#EDEAD9]">
+            <div className="flex justify-center mb-4">
+              <SugartownLogo size="lg" showBadge={false} />
+            </div>
+            
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FEF4ED] text-[#E66A1F] text-xs font-bold mb-2">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Restricted Executive Access</span>
+            </div>
+            <h2 className="text-xl font-display font-extrabold text-[#201D1A]">
+              Administrator Console Login
+            </h2>
+            <p className="text-xs text-[#6B655D] mt-1">
+              Authorized master credentials required for payroll, approvals & backend verification
+            </p>
+          </div>
+
+          {/* Login Form (Without Any Hints) */}
+          <form onSubmit={handleLoginSubmit} className="p-8 space-y-4.5">
+            {loginError && (
+              <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start gap-2 animate-in fade-in">
+                <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="admin-phone-input" className="text-xs font-bold text-[#201D1A] block mb-1.5">
+                Administrator Phone Number
+              </label>
+              <div className="relative">
+                <input
+                  id="admin-phone-input"
+                  type="text"
+                  required
+                  autoComplete="username"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Enter administrator mobile number"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F2] text-xs font-medium text-[#201D1A] rounded-xl border border-[#EDEAD9] focus:bg-white focus:border-[#E66A1F] focus:outline-none transition-all"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="admin-password-input" className="text-xs font-bold text-[#201D1A] block mb-1.5">
+                Security Password
+              </label>
+              <div className="relative">
+                <input
+                  id="admin-password-input"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter administrator password"
+                  className="w-full px-3.5 py-2.5 bg-[#FAF8F2] text-xs font-medium text-[#201D1A] rounded-xl border border-[#EDEAD9] focus:bg-white focus:border-[#E66A1F] focus:outline-none pr-10 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B655D] hover:text-[#201D1A] p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                id="admin-login-submit-btn"
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-2.5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold shadow-md shadow-[#E66A1F]/25 flex items-center justify-center gap-2 transition-all disabled:opacity-60"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Verifying Credentials...</span>
+                  </>
+                ) : (
+                  <>
+                    <KeyRound className="w-4 h-4" />
+                    <span>Sign In to Admin Portal</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+
+          <div className="p-4 bg-[#FAF8F2] border-t border-[#EDEAD9] text-center space-y-1.5">
+            <p className="text-[11px] text-[#6B655D] flex items-center justify-center gap-1.5">
+              <Lock className="w-3 h-3 text-[#E66A1F]" />
+              <span>TLS 1.3 End-to-End Enterprise Encryption · Session Auto-Expires</span>
+            </p>
+            <p className="text-[10px] text-[#6B655D]">
+              <strong className="text-[#201D1A]">{SUGARTOWN_CORPORATE_INFO.legalName}</strong>
+            </p>
+            <p className="text-[9px] text-[#6B655D] font-mono">
+              CIN: {SUGARTOWN_CORPORATE_INFO.cin} · Pune, Maharashtra
+            </p>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // ----------------------------------------------------
+  // Authenticated Master Administrator Console
+  // ----------------------------------------------------
+  return (
+    <div className="space-y-6 animate-in fade-in duration-200">
+      
+      {/* Master Session Banner */}
+      <div className="p-5 rounded-3xl bg-gradient-to-r from-[#201D1A] via-[#2D2824] to-[#1A1816] text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-stone-800">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FF7A29] to-[#E66A1F] flex items-center justify-center text-white shadow-md shadow-[#E66A1F]/30 shrink-0">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-lg font-display font-extrabold tracking-tight text-white">
+                Master Administrator Console
+              </h2>
+              <span className="px-2 py-0.5 rounded-full bg-[#396B5A]/80 text-emerald-200 text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                Executive Level 5
+              </span>
+            </div>
+            <p className="text-xs text-stone-300 mt-0.5">
+              Admin: <strong className="text-white font-mono">{adminSession?.phone || '9145448010'}</strong> · Active since {new Date(adminSession?.loginTime || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </p>
+            <p className="text-[10px] text-[#A4CDBD] font-medium mt-0.5">
+              {SUGARTOWN_CORPORATE_INFO.legalName} · CIN: {SUGARTOWN_CORPORATE_INFO.cin}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+          <button
+            id="admin-export-backup-btn"
+            onClick={handleExportFullBackup}
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-white/10"
+            title="Export complete database backup as JSON"
+          >
+            <Download className="w-3.5 h-3.5 text-[#A4CDBD]" />
+            <span>Export Backup</span>
+          </button>
+
+          <button
+            id="admin-logout-btn"
+            onClick={adminLogout}
+            className="px-3.5 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-200 text-xs font-semibold flex items-center gap-1.5 transition-colors border border-red-500/30"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span>Lock & Log Out</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Admin KPI Quick Stats Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="p-4 rounded-2xl bg-white border border-[#E5E0D2] shadow-2xs">
+          <div className="flex items-center justify-between text-[#6B655D] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Payroll Status</span>
+            <CreditCard className="w-4 h-4 text-[#E66A1F]" />
+          </div>
+          <div className="text-xl font-display font-black text-[#201D1A]">
+            {payrollRecords.length} Slips
+          </div>
+          <div className="mt-1 flex items-center gap-1 text-[10px] text-[#396B5A] font-bold">
+            <CheckCircle2 className="w-3 h-3" />
+            <span>Sweet Allowance Included</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-[#E5E0D2] shadow-2xs">
+          <div className="flex items-center justify-between text-[#6B655D] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Leave Approvals</span>
+            <CalendarCheck className="w-4 h-4 text-[#A4CDBD]" />
+          </div>
+          <div className="text-xl font-display font-black text-[#201D1A]">
+            {pendingLeaves.length} Pending
+          </div>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="text-[10px] text-[#6B655D]">Needs Clearance</span>
+            {pendingLeaves.length > 0 && (
+              <button
+                onClick={handleBatchApprove}
+                className="text-[10px] font-bold text-[#E66A1F] hover:underline"
+              >
+                Approve All
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-[#E5E0D2] shadow-2xs">
+          <div className="flex items-center justify-between text-[#6B655D] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Staff Verification</span>
+            <FileCheck className="w-4 h-4 text-[#396B5A]" />
+          </div>
+          <div className="text-xl font-display font-black text-[#201D1A]">
+            100% Compliant
+          </div>
+          <div className="mt-1 text-[10px] text-[#396B5A] font-bold">
+            HACCP & KYC Verified
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-white border border-[#E5E0D2] shadow-2xs">
+          <div className="flex items-center justify-between text-[#6B655D] mb-1">
+            <span className="text-[11px] font-bold uppercase tracking-wider">Security Audits</span>
+            <ShieldCheck className="w-4 h-4 text-[#396B5A]" />
+          </div>
+          <div className="text-xl font-display font-black text-[#201D1A]">
+            {auditLogs.length} Events
+          </div>
+          <div className="mt-1 text-[10px] text-[#6B655D] font-bold">
+            Master Audit Trail Active
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Tabbed Control Center */}
+      <div className="bg-white rounded-3xl border border-[#E5E0D2] shadow-sm overflow-hidden">
+        
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 p-2 border-b border-[#EDEAD9] bg-[#FAF8F2] overflow-x-auto">
+          <button
+            onClick={() => setAdminTab('overview')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 ${
+              adminTab === 'overview' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            Overview
+          </button>
+          
+          <button
+            onClick={() => setAdminTab('payroll')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
+              adminTab === 'payroll' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            <CreditCard className="w-3.5 h-3.5" />
+            <span>Create & Manage Payroll</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#EDEAD9] text-[#201D1A]">
+              {payrollRecords.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setAdminTab('leaves')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
+              adminTab === 'leaves' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            <CalendarCheck className="w-3.5 h-3.5" />
+            <span>Leave Approvals</span>
+            {pendingLeaves.length > 0 && (
+              <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#FEF4ED] text-[#E66A1F] font-bold">
+                {pendingLeaves.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setAdminTab('verification')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
+              adminTab === 'verification' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            <FileCheck className="w-3.5 h-3.5" />
+            <span>Backend Verification & Uploads</span>
+          </button>
+
+          <button
+            onClick={() => setAdminTab('stores')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 ${
+              adminTab === 'stores' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            Store Overrides ({locations.length})
+          </button>
+
+          <button
+            onClick={() => setAdminTab('emergency')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 ${
+              adminTab === 'emergency' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            Storewide Broadcast
+          </button>
+
+          <button
+            onClick={() => setAdminTab('audit')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 ${
+              adminTab === 'audit' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            Master Audit Log
+          </button>
+        </div>
+
+        {/* TAB 1: EXECUTIVE OVERVIEW */}
+        {adminTab === 'overview' && (
+          <div className="p-6 space-y-6">
+            <div>
+              <h3 className="text-sm font-bold text-[#201D1A] mb-3 flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#E66A1F]" />
+                <span>Executive Command Shortcuts</span>
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="p-4 rounded-2xl bg-[#FEF4ED] border border-[#E66A1F]/20 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#201D1A]">Batch Leave Authorization</h4>
+                    <p className="text-[11px] text-[#6B655D] mt-1">
+                      Instantly approve {pendingLeaves.length} pending employee leave request(s) across all stores.
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleBatchApprove}
+                    disabled={pendingLeaves.length === 0}
+                    className="mt-3 px-3 py-1.5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold disabled:opacity-40 transition-colors"
+                  >
+                    {pendingLeaves.length > 0 ? `Approve All (${pendingLeaves.length})` : 'No Pending Requests'}
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#EEF7F4] border border-[#396B5A]/20 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#201D1A]">Create New Payroll Record</h4>
+                    <p className="text-[11px] text-[#6B655D] mt-1">
+                      Calculate salary, overtime rates, sweet allowances, and disburse vouchers.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAdminTab('payroll')}
+                    className="mt-3 px-3 py-1.5 rounded-xl bg-[#396B5A] hover:bg-[#2C5346] text-white text-xs font-bold transition-colors"
+                  >
+                    Open Payroll Creator
+                  </button>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9] flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-[#201D1A]">Backend Document Verification</h4>
+                    <p className="text-[11px] text-[#6B655D] mt-1">
+                      Upload food hygiene permits, W-4 tax forms, and update verification badges.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setAdminTab('verification')}
+                    className="mt-3 px-3 py-1.5 rounded-xl bg-[#201D1A] hover:bg-black text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <FileCheck className="w-3.5 h-3.5 text-[#A4CDBD]" />
+                    <span>Upload & Verify</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Store Facility Directory */}
+            <div>
+              <h3 className="text-sm font-bold text-[#201D1A] mb-3 flex items-center gap-2">
+                <Store className="w-4 h-4 text-[#E66A1F]" />
+                <span>Store Operations & Facility Directory</span>
+              </h3>
+
+              <div className="rounded-2xl border border-[#EDEAD9] overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FAF8F2] border-b border-[#EDEAD9] text-[#6B655D]">
+                    <tr>
+                      <th className="p-3 font-bold">Location</th>
+                      <th className="p-3 font-bold">Type</th>
+                      <th className="p-3 font-bold">Store Manager</th>
+                      <th className="p-3 font-bold">Hours</th>
+                      <th className="p-3 font-bold">Geofence Beacon</th>
+                      <th className="p-3 font-bold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDEAD9]">
+                    {locations.map(loc => (
+                      <tr key={loc.id} className="hover:bg-[#FAF8F2]/60 transition-colors">
+                        <td className="p-3 font-bold text-[#201D1A]">{loc.name}</td>
+                        <td className="p-3 text-[#6B655D]">{loc.type}</td>
+                        <td className="p-3 text-[#201D1A]">{loc.managerName}</td>
+                        <td className="p-3 font-mono text-[11px] text-[#6B655D]">{loc.openTime} - {loc.closeTime}</td>
+                        <td className="p-3">
+                          <span className="font-mono text-[11px] text-[#396B5A] bg-[#EEF7F4] px-2 py-0.5 rounded-md font-bold">
+                            {loc.geofenceRadiusMeters}m radius
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A]">
+                            ● Operational
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 2: CREATE & MANAGE PAYROLL */}
+        {adminTab === 'payroll' && (
+          <div className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-[#201D1A] font-display">
+                  Admin Payroll Management & Voucher Generation
+                </h3>
+                <p className="text-xs text-[#6B655D]">
+                  Calculate base earnings, overtime hours, Sugartown Sweet Allowance, and disburse direct deposits.
+                </p>
+              </div>
+
+              <button
+                id="admin-batch-process-payroll-btn"
+                onClick={() => {
+                  processPayrollBatch('September 2026');
+                  triggerConfetti();
+                  alert('Processed September 2026 payroll batch for all active store employees!');
+                }}
+                className="py-2.5 px-4 rounded-xl bg-[#396B5A] hover:bg-[#2C5346] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+              >
+                <RefreshCw className="w-4 h-4" />
+                <span>Batch Process All Staff</span>
+              </button>
+            </div>
+
+            {payrollSuccessMsg && (
+              <div className="p-3.5 rounded-2xl bg-[#EEF7F4] border border-[#A4CDBD]/50 text-xs font-bold text-[#396B5A] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{payrollSuccessMsg}</span>
+              </div>
+            )}
+
+            {/* Create Individual Payroll Form */}
+            <div className="bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] p-5 space-y-4">
+              <h4 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider flex items-center gap-2">
+                <PlusCircle className="w-4 h-4 text-[#E66A1F]" />
+                <span>Generate Custom Payroll Record</span>
+              </h4>
+
+              <form onSubmit={handleCreatePayroll} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+                <div>
+                  <label className="block font-bold text-[#201D1A] mb-1">Select Employee</label>
+                  <select
+                    id="admin-payroll-employee-select"
+                    value={selectedPayEmpId}
+                    onChange={(e) => setSelectedPayEmpId(e.target.value)}
+                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white font-medium text-[#201D1A]"
+                  >
+                    {employees.map(e => (
+                      <option key={e.id} value={e.id}>
+                        {e.fullName} ({e.id}) - {e.designation}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#201D1A] mb-1">Pay Month</label>
+                  <input
+                    id="admin-payroll-month-input"
+                    type="text"
+                    value={payMonth}
+                    onChange={(e) => setPayMonth(e.target.value)}
+                    placeholder="e.g. October 2026"
+                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white font-medium text-[#201D1A]"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#201D1A] mb-1">Sweet Allowance ($)</label>
+                  <input
+                    id="admin-payroll-sweet-allowance-input"
+                    type="number"
+                    value={paySweetAllowance}
+                    onChange={(e) => setPaySweetAllowance(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white font-medium text-[#201D1A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#201D1A] mb-1">Overtime (Hours)</label>
+                  <input
+                    id="admin-payroll-ot-hours-input"
+                    type="number"
+                    value={payOvertimeHours}
+                    onChange={(e) => setPayOvertimeHours(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white font-medium text-[#201D1A]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#201D1A] mb-1">Incentive / Bonus ($)</label>
+                  <input
+                    id="admin-payroll-bonus-input"
+                    type="number"
+                    value={payBonus}
+                    onChange={(e) => setPayBonus(Number(e.target.value))}
+                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white font-medium text-[#201D1A]"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 md:col-span-5 flex justify-end pt-2">
+                  <button
+                    id="admin-generate-payroll-btn"
+                    type="submit"
+                    className="py-2.5 px-6 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white font-bold text-xs shadow-md shadow-[#E66A1F]/25 flex items-center gap-2 transition-transform active:scale-98"
+                  >
+                    <CreditCard className="w-4 h-4" />
+                    <span>Calculate & Disburse Payroll Record</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Payroll History Table */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                Current Payroll Registry ({payrollRecords.length} Records)
+              </h4>
+
+              <div className="rounded-2xl border border-[#EDEAD9] overflow-hidden overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FAF8F2] border-b border-[#EDEAD9] text-[#6B655D]">
+                    <tr>
+                      <th className="p-3 font-bold">Month</th>
+                      <th className="p-3 font-bold">Staff Member</th>
+                      <th className="p-3 font-bold">Base Pay</th>
+                      <th className="p-3 font-bold">Sweet Allowance</th>
+                      <th className="p-3 font-bold">Overtime</th>
+                      <th className="p-3 font-bold">Net Salary</th>
+                      <th className="p-3 font-bold">Status</th>
+                      <th className="p-3 font-bold">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDEAD9]">
+                    {payrollRecords.map(pay => (
+                      <tr key={pay.id} className="hover:bg-[#FAF8F2]/60 transition-colors">
+                        <td className="p-3 font-bold text-[#201D1A] whitespace-nowrap">{pay.month}</td>
+                        <td className="p-3">
+                          <div className="font-bold text-[#201D1A]">{pay.employeeName}</div>
+                          <div className="text-[10px] text-[#6B655D]">{pay.designation} · {pay.employeeId}</div>
+                        </td>
+                        <td className="p-3 font-mono">${pay.earnings.basic.toLocaleString()}</td>
+                        <td className="p-3 font-mono font-bold text-[#E66A1F]">+${pay.earnings.confectioneryAllowance}</td>
+                        <td className="p-3 font-mono">{pay.overtimeHours} hrs (+${pay.earnings.overtimePay})</td>
+                        <td className="p-3 font-mono font-black text-[#396B5A]">${pay.netSalary.toLocaleString()}</td>
+                        <td className="p-3">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            pay.status === 'Paid' ? 'bg-[#EEF7F4] text-[#396B5A]' : 'bg-[#FEF4ED] text-[#E66A1F]'
+                          }`}>
+                            {pay.status}
+                          </span>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-1.5">
+                            {pay.status !== 'Paid' && (
+                              <button
+                                onClick={() => markPayrollPaid(pay.id)}
+                                className="px-2 py-1 rounded-lg bg-[#396B5A] text-white text-[10px] font-bold hover:bg-[#2C5346]"
+                              >
+                                Disburse
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setSelectedPayslipModal(pay)}
+                              className="px-2 py-1 rounded-lg bg-white border border-[#EDEAD9] text-[#201D1A] text-[10px] font-bold hover:bg-[#FAF8F2]"
+                            >
+                              Slip
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 3: LEAVE APPROVAL */}
+        {adminTab === 'leaves' && (
+          <div className="p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-[#201D1A] font-display">
+                  Leave Authorization & Manager Approvals
+                </h3>
+                <p className="text-xs text-[#6B655D]">
+                  Review store staff time off requests, verify coverage, and authorize approvals.
+                </p>
+              </div>
+
+              {pendingLeaves.length > 0 && (
+                <button
+                  id="admin-batch-approve-leaves-btn"
+                  onClick={handleBatchApprove}
+                  className="py-2.5 px-4 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Authorize All Pending ({pendingLeaves.length})</span>
+                </button>
+              )}
+            </div>
+
+            {/* Filter Tabs */}
+            <div className="flex items-center gap-2 border-b border-[#EDEAD9] pb-2 text-xs">
+              {(['all', 'pending', 'approved', 'rejected'] as const).map(tab => (
+                <button
+                  key={tab}
+                  onClick={() => setLeaveFilter(tab)}
+                  className={`px-3 py-1.5 rounded-lg font-bold capitalize transition-colors ${
+                    leaveFilter === tab
+                      ? 'bg-[#201D1A] text-white'
+                      : 'text-[#6B655D] hover:bg-[#FAF8F2]'
+                  }`}
+                >
+                  {tab} ({tab === 'all' ? leaveRequests.length : leaveRequests.filter(l => l.status === tab).length})
+                </button>
+              ))}
+            </div>
+
+            {/* Leaves List */}
+            <div className="space-y-3">
+              {leaveRequests
+                .filter(l => leaveFilter === 'all' || l.status === leaveFilter)
+                .map(req => {
+                  const emp = employees.find(e => e.id === req.employeeId);
+                  const commentVal = leaveReviewComment[req.id] || '';
+
+                  return (
+                    <div
+                      key={req.id}
+                      className="p-4 rounded-2xl border border-[#EDEAD9] bg-white hover:border-[#E66A1F]/30 transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3.5">
+                        <img
+                          src={emp?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'}
+                          alt={req.employeeName}
+                          className="w-12 h-12 rounded-xl object-cover border border-[#EDEAD9]"
+                        />
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-bold text-xs text-[#201D1A]">{req.employeeName}</h4>
+                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#FAF8F2] text-[#6B655D] font-mono">
+                              {req.employeeId}
+                            </span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
+                              req.status === 'approved'
+                                ? 'bg-[#EEF7F4] text-[#396B5A]'
+                                : req.status === 'rejected'
+                                ? 'bg-red-50 text-red-600'
+                                : 'bg-[#FEF4ED] text-[#E66A1F]'
+                            }`}>
+                              {req.status}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#6B655D]">
+                            <strong>{req.leaveType}</strong> · {req.startDate} to {req.endDate} ({req.daysCount} days)
+                          </p>
+                          <p className="text-[11px] text-[#201D1A] italic">
+                            Reason: "{req.reason}"
+                          </p>
+                          {req.reviewComment && (
+                            <p className="text-[10px] text-[#396B5A] font-bold">
+                              Clearance Comment: {req.reviewComment}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action buttons if pending */}
+                      {req.status === 'pending' && (
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                          <input
+                            type="text"
+                            placeholder="Approval note (optional)"
+                            value={commentVal}
+                            onChange={(e) => setLeaveReviewComment({ ...leaveReviewComment, [req.id]: e.target.value })}
+                            className="px-2.5 py-1.5 bg-[#FAF8F2] border border-[#EDEAD9] rounded-xl text-xs focus:bg-white focus:outline-none text-[#201D1A]"
+                          />
+                          <div className="flex items-center gap-2">
+                            <button
+                              id={`approve-leave-${req.id}`}
+                              onClick={() => {
+                                reviewLeave(req.id, 'approved', commentVal || 'Authorized by Master Admin (9145448010)');
+                                triggerConfetti();
+                              }}
+                              className="flex-1 sm:flex-none py-1.5 px-3 bg-[#396B5A] hover:bg-[#2C5346] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Approve</span>
+                            </button>
+
+                            <button
+                              id={`reject-leave-${req.id}`}
+                              onClick={() => {
+                                reviewLeave(req.id, 'rejected', commentVal || 'Denied due to peak store footfall');
+                              }}
+                              className="flex-1 sm:flex-none py-1.5 px-3 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold rounded-xl flex items-center justify-center gap-1 border border-red-200"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>Reject</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 4: BACKEND VERIFICATION & DOCUMENT UPLOAD */}
+        {adminTab === 'verification' && (
+          <div className="p-6 space-y-6">
+            <div>
+              <h3 className="text-base font-bold text-[#201D1A] font-display">
+                Staff Backend Verification & Document Repository
+              </h3>
+              <p className="text-xs text-[#6B655D]">
+                Verify employee credentials, upload food safety certifications, W-4 tax documents, and manage compliance.
+              </p>
+            </div>
+
+            {docUploadMsg && (
+              <div className="p-3.5 rounded-2xl bg-[#EEF7F4] border border-[#A4CDBD]/50 text-xs font-bold text-[#396B5A] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{docUploadMsg}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Left Column: Select Employee */}
+              <div className="bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                    Staff Personnel
+                  </h4>
+                  <span className="text-[10px] text-[#6B655D]">{employees.length} Members</span>
+                </div>
+
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 text-[#6B655D] absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search staff name..."
+                    value={docSearch}
+                    onChange={(e) => setDocSearch(e.target.value)}
+                    className="w-full pl-8 pr-3 py-1.5 bg-white rounded-xl border border-[#EDEAD9] text-xs focus:outline-none focus:border-[#E66A1F]"
+                  />
+                </div>
+
+                <div className="space-y-1.5 max-h-96 overflow-y-auto pr-1">
+                  {employees
+                    .filter(e => e.fullName.toLowerCase().includes(docSearch.toLowerCase()) || e.id.toLowerCase().includes(docSearch.toLowerCase()))
+                    .map(e => (
+                      <button
+                        key={e.id}
+                        onClick={() => setSelectedDocEmpId(e.id)}
+                        className={`w-full p-2.5 rounded-xl border text-left flex items-center justify-between transition-colors ${
+                          selectedDocEmpId === e.id
+                            ? 'bg-[#E66A1F] text-white border-[#E66A1F]'
+                            : 'bg-white text-[#201D1A] border-[#EDEAD9] hover:bg-[#FAF8F2]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <img src={e.avatar} alt={e.fullName} className="w-7 h-7 rounded-full object-cover border border-white/20" />
+                          <div>
+                            <div className="text-xs font-bold leading-tight">{e.fullName}</div>
+                            <div className={`text-[10px] leading-tight ${selectedDocEmpId === e.id ? 'text-white/80' : 'text-[#6B655D]'}`}>
+                              {e.id} · {e.department}
+                            </div>
+                          </div>
+                        </div>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                          selectedDocEmpId === e.id ? 'bg-white/20 text-white' : 'bg-[#EEF7F4] text-[#396B5A]'
+                        }`}>
+                          {e.documents.length} Docs
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              {/* Right Column: Upload & Manage Docs for Selected Staff */}
+              <div className="lg:col-span-2 space-y-6">
+                
+                {/* Selected Employee Verification Card */}
+                <div className="bg-white rounded-2xl border border-[#EDEAD9] p-5 space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-3">
+                      <img src={selectedDocEmployee.avatar} alt={selectedDocEmployee.fullName} className="w-12 h-12 rounded-xl object-cover border-2 border-[#E66A1F]" />
+                      <div>
+                        <h4 className="font-black text-sm text-[#201D1A]">{selectedDocEmployee.fullName}</h4>
+                        <p className="text-xs text-[#6B655D]">{selectedDocEmployee.designation} · {selectedDocEmployee.locationName}</p>
+                      </div>
+                    </div>
+
+                    {/* Verification Status Pill */}
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-xl bg-[#EEF7F4] text-[#396B5A] text-xs font-bold flex items-center gap-1.5 border border-[#A4CDBD]/40">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Background Verified</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Backend Compliance Status Row */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#EDEAD9] text-xs">
+                    <div className="p-2 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9]">
+                      <span className="text-[10px] text-[#6B655D] block uppercase font-bold">Govt ID KYC</span>
+                      <span className="text-[#396B5A] font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Approved
+                      </span>
+                    </div>
+                    <div className="p-2 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9]">
+                      <span className="text-[10px] text-[#6B655D] block uppercase font-bold">Food Safety</span>
+                      <span className="text-[#396B5A] font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> HACCP Active
+                      </span>
+                    </div>
+                    <div className="p-2 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9]">
+                      <span className="text-[10px] text-[#6B655D] block uppercase font-bold">Direct Deposit</span>
+                      <span className="text-[#396B5A] font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Bank Verified
+                      </span>
+                    </div>
+                    <div className="p-2 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9]">
+                      <span className="text-[10px] text-[#6B655D] block uppercase font-bold">Tax Form</span>
+                      <span className="text-[#396B5A] font-bold flex items-center gap-1">
+                        <Check className="w-3 h-3" /> W-4 Filed
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upload Form */}
+                <div className="bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] p-5 space-y-4">
+                  <h4 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider flex items-center gap-2">
+                    <Upload className="w-4 h-4 text-[#E66A1F]" />
+                    <span>Upload New Verification Document for {selectedDocEmployee.fullName}</span>
+                  </h4>
+
+                  <form onSubmit={handleUploadDocument} className="space-y-3 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Document Title</label>
+                        <input
+                          id="admin-doc-title-input"
+                          type="text"
+                          required
+                          value={docName}
+                          onChange={(e) => setDocName(e.target.value)}
+                          placeholder="e.g. NYC Food Handler License 2026"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white text-[#201D1A] font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Document Category</label>
+                        <select
+                          id="admin-doc-category-select"
+                          value={docType}
+                          onChange={(e) => setDocType(e.target.value as any)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-white text-[#201D1A] font-medium"
+                        >
+                          <option value="Food Safety License">Food Safety License / HACCP Certification</option>
+                          <option value="ID Proof">Government ID / Passport / Driving License</option>
+                          <option value="Contract">Signed Employment Contract / Offer</option>
+                          <option value="Tax W-4">Tax Form W-4 / State Exemption</option>
+                          <option value="Bank Proof">Direct Deposit Bank Proof</option>
+                          <option value="Health Certificate">Health / Food Handler Certificate</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Drag and Drop Mock File Zone */}
+                    <div className="p-4 rounded-xl border-2 border-dashed border-[#EDEAD9] bg-white text-center space-y-1">
+                      <Upload className="w-5 h-5 text-[#E66A1F] mx-auto" />
+                      <p className="font-bold text-[#201D1A] text-xs">Drop PDF / Scan image here or click to browse</p>
+                      <p className="text-[10px] text-[#6B655D]">Supports PDF, PNG, JPG up to 10MB</p>
+                    </div>
+
+                    <button
+                      id="admin-upload-doc-submit-btn"
+                      type="submit"
+                      className="py-2.5 px-5 bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold rounded-xl flex items-center gap-2 transition-transform active:scale-98 shadow-sm"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>Upload & Certify Document</span>
+                    </button>
+                  </form>
+                </div>
+
+                {/* Uploaded Documents List */}
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                    Certified Documents on File ({selectedDocEmployee.documents.length})
+                  </h4>
+
+                  <div className="space-y-2">
+                    {selectedDocEmployee.documents.map(doc => (
+                      <div
+                        key={doc.id}
+                        className="p-3.5 rounded-xl border border-[#EDEAD9] bg-white flex items-center justify-between text-xs hover:border-[#E66A1F]/30 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-[#FAF8F2] text-[#E66A1F]">
+                            <FileText className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-bold text-[#201D1A]">{doc.name}</div>
+                            <div className="text-[10px] text-[#6B655D]">
+                              {doc.type} · Uploaded: {doc.uploadDate} · {doc.size}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Status Toggle */}
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={doc.status}
+                            onChange={(e) => verifyEmployeeDocument(selectedDocEmployee.id, doc.id, e.target.value as any)}
+                            className={`p-1.5 rounded-lg text-[10px] font-bold border ${
+                              doc.status === 'Verified'
+                                ? 'bg-[#EEF7F4] text-[#396B5A] border-[#A4CDBD]'
+                                : doc.status === 'Needs Renewal'
+                                ? 'bg-red-50 text-red-700 border-red-200'
+                                : 'bg-[#FEF4ED] text-[#E66A1F] border-[#E66A1F]/40'
+                            }`}
+                          >
+                            <option value="Verified">Verified ✓</option>
+                            <option value="Pending Review">Pending Review</option>
+                            <option value="Needs Renewal">Needs Renewal</option>
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 5: STORE OVERRIDES */}
+        {adminTab === 'stores' && (
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#201D1A]">Store Facility Modes & Emergency Controls</h3>
+                <p className="text-xs text-[#6B655D]">Adjust operational status across all 5 Sugartown retail and production centers</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {locations.map(loc => {
+                const currentOverride = storeStatusOverrides[loc.id] || 'Normal';
+
+                return (
+                  <div key={loc.id} className="p-4 rounded-2xl border border-[#EDEAD9] bg-[#FAF8F2] space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="text-xs font-bold text-[#201D1A]">{loc.name}</h4>
+                        <p className="text-[11px] text-[#6B655D]">{loc.address}, {loc.city}</p>
+                      </div>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        currentOverride === 'Normal' ? 'bg-[#EEF7F4] text-[#396B5A]' : 'bg-[#FEF4ED] text-[#E66A1F]'
+                      }`}>
+                        {currentOverride}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-[#6B655D] pt-2 border-t border-[#EDEAD9]">
+                      <span>Manager: <strong className="text-[#201D1A]">{loc.managerName}</strong></span>
+                      <span>Phone: <span className="font-mono text-[#201D1A]">{loc.phone}</span></span>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          setStoreStatusOverrides(prev => ({ ...prev, [loc.id]: 'Normal' }));
+                          triggerConfetti();
+                        }}
+                        className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-colors ${
+                          currentOverride === 'Normal' ? 'bg-[#396B5A] text-white' : 'bg-white text-[#6B655D] border border-[#EDEAD9]'
+                        }`}
+                      >
+                        Normal
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStoreStatusOverrides(prev => ({ ...prev, [loc.id]: 'Audit Mode' }));
+                          triggerConfetti();
+                        }}
+                        className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-colors ${
+                          currentOverride === 'Audit Mode' ? 'bg-[#E66A1F] text-white' : 'bg-white text-[#6B655D] border border-[#EDEAD9]'
+                        }`}
+                      >
+                        Audit Mode
+                      </button>
+                      <button
+                        onClick={() => {
+                          setStoreStatusOverrides(prev => ({ ...prev, [loc.id]: 'Special Event' }));
+                          triggerConfetti();
+                        }}
+                        className={`flex-1 py-1 text-[11px] font-bold rounded-lg transition-colors ${
+                          currentOverride === 'Special Event' ? 'bg-[#201D1A] text-white' : 'bg-white text-[#6B655D] border border-[#EDEAD9]'
+                        }`}
+                      >
+                        Special Event
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* TAB 6: STOREWIDE BROADCAST */}
+        {adminTab === 'emergency' && (
+          <div className="p-6 max-w-xl mx-auto space-y-4">
+            <div className="text-center space-y-1">
+              <div className="w-10 h-10 rounded-2xl bg-[#E66A1F] text-white flex items-center justify-center mx-auto shadow-md shadow-[#E66A1F]/30">
+                <Megaphone className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-[#201D1A]">Storewide Executive Broadcast</h3>
+              <p className="text-xs text-[#6B655D]">
+                Dispatches an immediate priority bulletin to all staff across all 5 store and factory terminals.
+              </p>
+            </div>
+
+            {broadcastSent && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-[#396B5A] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#396B5A]" />
+                <span>Executive broadcast dispatched successfully to all store dashboards!</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSendBroadcast} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[#201D1A] block mb-1">Notice Headline</label>
+                <input
+                  type="text"
+                  required
+                  value={broadcastTitle}
+                  onChange={(e) => setBroadcastTitle(e.target.value)}
+                  placeholder="e.g. Master Confectionery Tasting Batch & Extended Hours"
+                  className="w-full p-2.5 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9] text-xs focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#201D1A] block mb-1">Notice Content</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  placeholder="Provide precise instructions for all store managers and staff..."
+                  className="w-full p-2.5 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9] text-xs focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold shadow-md shadow-[#E66A1F]/30 flex items-center justify-center gap-2 transition-all"
+              >
+                <Megaphone className="w-4 h-4" />
+                <span>Broadcast Notice to All Stores</span>
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* TAB 7: MASTER AUDIT LOG */}
+        {adminTab === 'audit' && (
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-[#201D1A]">Master Security & Compliance Audit Log</h3>
+                <p className="text-xs text-[#6B655D]">Real-time system events, role changes, leave signoffs, and authentication records</p>
+              </div>
+              <span className="text-xs font-bold text-[#6B655D] bg-[#FAF8F2] px-3 py-1 rounded-xl border border-[#EDEAD9]">
+                {auditLogs.length} Logged Entries
+              </span>
+            </div>
+
+            <div className="rounded-2xl border border-[#EDEAD9] overflow-hidden max-h-96 overflow-y-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-[#FAF8F2] border-b border-[#EDEAD9] text-[#6B655D] sticky top-0">
+                  <tr>
+                    <th className="p-3 font-bold">Timestamp</th>
+                    <th className="p-3 font-bold">Category</th>
+                    <th className="p-3 font-bold">Action</th>
+                    <th className="p-3 font-bold">Actor</th>
+                    <th className="p-3 font-bold">Details</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EDEAD9]">
+                  {auditLogs.map(log => (
+                    <tr key={log.id} className="hover:bg-[#FAF8F2]/60 transition-colors">
+                      <td className="p-3 font-mono text-[11px] text-[#6B655D] whitespace-nowrap">{log.timestamp}</td>
+                      <td className="p-3">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          log.category === 'Security' ? 'bg-red-50 text-red-600 border border-red-200' :
+                          log.category === 'Payroll' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                          log.category === 'Leave' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                          'bg-[#FAF8F2] text-[#201D1A] border border-[#EDEAD9]'
+                        }`}>
+                          {log.category}
+                        </span>
+                      </td>
+                      <td className="p-3 font-bold text-[#201D1A]">{log.action}</td>
+                      <td className="p-3 text-[#6B655D] whitespace-nowrap">{log.actorName}</td>
+                      <td className="p-3 text-[#201D1A] max-w-xs truncate" title={log.details}>{log.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* Official Payslip Modal in Admin */}
+      {selectedPayslipModal && (
+        <OfficialPayslipModal
+          payslip={selectedPayslipModal}
+          onClose={() => setSelectedPayslipModal(null)}
+        />
+      )}
+
+    </div>
+  );
+};

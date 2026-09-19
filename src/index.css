@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  
+  --color-sugartown-primary: #E66A1F;
+  --color-sugartown-primary-hover: #D25A12;
+  --color-sugartown-primary-light: #FEF4ED;
+  --color-sugartown-mint: #A4CDBD;
+  --color-sugartown-mint-light: #F0F7F4;
+  --color-sugartown-mint-dark: #396B5A;
+  --color-sugartown-cream: #EDEAD9;
+  --color-sugartown-cream-light: #FAF8F2;
+  --color-sugartown-dark: #201D1A;
+  --color-sugartown-muted: #6B655D;
+  --color-sugartown-sand: #E5E0D2;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: #F8F6F1;
+  color: #201D1A;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Custom scrollbars that match the creamy Sugartown aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D9D3C3;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C4BDA9;
+}
+
