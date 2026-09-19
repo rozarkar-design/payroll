@@ -47,10 +47,8 @@ export const DashboardPortalGateway: React.FC = () => {
     triggerConfetti
   } = useHRMS();
 
-  // Employee Login State
-  const [empInput, setEmpInput] = useState('');
-  const [empPassword, setEmpPassword] = useState('');
-  const [showEmpPassword, setShowEmpPassword] = useState(false);
+  // Employee Login State (Direct Registered Mobile Login - No Password Required)
+  const [empMobile, setEmpMobile] = useState('');
   const [empError, setEmpError] = useState('');
   const [empSuccess, setEmpSuccess] = useState('');
 
@@ -61,37 +59,33 @@ export const DashboardPortalGateway: React.FC = () => {
   const [adminError, setAdminError] = useState('');
   const [adminSuccess, setAdminSuccess] = useState('');
 
-  // Forgot Password Modals
-  const [forgotPasswordRole, setForgotPasswordRole] = useState<'employee' | 'admin' | null>(null);
+  // Forgot Password Modal (Admin only)
+  const [forgotPasswordRole, setForgotPasswordRole] = useState<'admin' | null>(null);
   const [forgotInput, setForgotInput] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
 
-  // Handle Employee Login
+  // Handle Employee Login via Registered Mobile
   const handleEmployeeLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setEmpError('');
     setEmpSuccess('');
 
-    const targetId = empInput.trim();
-    if (!targetId) {
-      setEmpError('Please enter your Employee ID or registered email.');
-      return;
-    }
-    if (!empPassword.trim()) {
-      setEmpError('Please enter your employee portal password.');
+    const targetMobile = empMobile.trim();
+    if (!targetMobile) {
+      setEmpError('Please enter your registered mobile number.');
       return;
     }
 
-    const result = employeePortalLogin(targetId);
+    const result = employeePortalLogin(targetMobile);
 
     if (result.success && result.employee) {
-      setEmpSuccess(`Authenticated! Welcome back, ${result.employee.fullName}`);
+      setEmpSuccess(`Authenticated! Welcome, ${result.employee.fullName}`);
       triggerConfetti();
       setTimeout(() => {
         setActiveTab('employee_portal');
       }, 350);
     } else {
-      setEmpError(result.error || 'Employee not found. Please verify your Employee ID or Email.');
+      setEmpError(result.error || 'No employee record found for this registered mobile number.');
     }
   };
 
@@ -286,7 +280,7 @@ export const DashboardPortalGateway: React.FC = () => {
                 </button>
               </div>
             ) : (
-              /* If employee is NOT logged in: Show Form with ID, Password, and Forgot Password */
+              /* Password-free Employee Login: Registered Mobile Number only */
               <form onSubmit={handleEmployeeLogin} className="mt-3 space-y-3">
                 {empError && (
                   <div className="p-2.5 bg-[#FEF4ED] border border-[#E66A1F]/30 rounded-xl flex items-center gap-2 text-xs text-[#E66A1F]">
@@ -302,69 +296,39 @@ export const DashboardPortalGateway: React.FC = () => {
                 )}
 
                 <div>
-                  <label className="block text-[11px] font-bold text-[#201D1A] mb-1">
-                    Employee ID / Email
-                  </label>
-                  <div className="relative">
-                    <Hash className="w-3.5 h-3.5 text-[#6B655D] absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      id="gateway-emp-id-input"
-                      type="text"
-                      value={empInput}
-                      onChange={(e) => setEmpInput(e.target.value)}
-                      placeholder="e.g. ST-1005 or maya@sugartown.in"
-                      className="w-full pl-8 pr-3 py-2 text-xs font-semibold text-[#201D1A] bg-[#FAF8F2] focus:bg-white rounded-xl border border-[#E5E0D2] focus:border-[#396B5A] focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-[11px] font-bold text-[#201D1A]">
-                      Password
+                      Registered Mobile Number
                     </label>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setForgotPasswordRole('employee');
-                        setForgotInput(empInput);
-                        setForgotSubmitted(false);
-                      }}
-                      className="text-[11px] text-[#396B5A] hover:underline font-semibold"
-                    >
-                      Forgot Password?
-                    </button>
+                    <span className="text-[10px] font-semibold text-[#396B5A] bg-[#EEF7F4] px-1.5 py-0.5 rounded-md">
+                      Password-free
+                    </span>
                   </div>
                   <div className="relative">
-                    <Lock className="w-3.5 h-3.5 text-[#6B655D] absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-3.5 h-3.5 text-[#6B655D] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
-                      id="gateway-emp-password-input"
-                      type={showEmpPassword ? 'text' : 'password'}
-                      value={empPassword}
-                      onChange={(e) => setEmpPassword(e.target.value)}
-                      placeholder="Enter employee password"
-                      className="w-full pl-8 pr-9 py-2 text-xs font-semibold text-[#201D1A] bg-[#FAF8F2] focus:bg-white rounded-xl border border-[#E5E0D2] focus:border-[#396B5A] focus:outline-none"
+                      id="gateway-emp-mobile-input"
+                      type="tel"
+                      value={empMobile}
+                      onChange={(e) => setEmpMobile(e.target.value)}
+                      placeholder="Enter 10-digit registered mobile (e.g. 98220 55155)"
+                      className="w-full pl-8 pr-3 py-2 text-xs font-semibold text-[#201D1A] bg-[#FAF8F2] focus:bg-white rounded-xl border border-[#E5E0D2] focus:border-[#396B5A] focus:outline-none transition-colors"
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowEmpPassword(!showEmpPassword)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#6B655D] hover:text-[#201D1A]"
-                    >
-                      {showEmpPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    </button>
                   </div>
                 </div>
 
-                {/* Quick Hint for Reviewer / Demo */}
-                <div className="p-2 rounded-lg bg-[#FAF8F2] border border-[#EDEAD9] text-[10px] text-[#6B655D] flex items-center justify-between">
-                  <span>Demo: <strong className="text-[#201D1A]">ST-1005</strong> / <strong className="text-[#201D1A]">Sugartown@123</strong></span>
+                {/* Quick 1-Click Demo Fill */}
+                <div className="p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] text-[11px] text-[#6B655D] flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 truncate mr-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#396B5A] shrink-0" />
+                    <span className="truncate">Demo: <strong className="text-[#201D1A]">98220 55155</strong> (Maya Lin)</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
-                      setEmpInput('ST-1005');
-                      setEmpPassword('Sugartown@123');
+                      setEmpMobile('98220 55155');
                     }}
-                    className="text-[#396B5A] font-bold hover:underline"
+                    className="text-[#396B5A] font-bold hover:underline shrink-0 text-[11px] cursor-pointer"
                   >
                     Auto-Fill
                   </button>
@@ -373,10 +337,10 @@ export const DashboardPortalGateway: React.FC = () => {
                 <button
                   id="gateway-employee-login-submit-btn"
                   type="submit"
-                  className="w-full py-2.5 px-3 bg-[#396B5A] hover:bg-[#2C5245] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition-all"
+                  className="w-full py-2.5 px-3 bg-[#396B5A] hover:bg-[#2C5245] text-white rounded-xl text-xs font-bold shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
                 >
                   <UserCheck className="w-3.5 h-3.5" />
-                  <span>Secure Sign In</span>
+                  <span>Login to Employee Portal</span>
                   <ArrowRight className="w-3.5 h-3.5 ml-1" />
                 </button>
               </form>
@@ -725,7 +689,7 @@ export const DashboardPortalGateway: React.FC = () => {
               <div className="flex items-center gap-2">
                 <KeyRound className="w-5 h-5 text-[#E66A1F]" />
                 <h3 className="font-bold text-base text-[#201D1A]">
-                  {forgotPasswordRole === 'employee' ? 'Reset Employee Password' : 'Admin Security Recovery'}
+                  Admin Security Recovery
                 </h3>
               </div>
               <button 
@@ -755,21 +719,19 @@ export const DashboardPortalGateway: React.FC = () => {
             ) : (
               <form onSubmit={handleForgotPasswordSubmit} className="space-y-3.5">
                 <p className="text-xs text-[#6B655D] leading-relaxed">
-                  {forgotPasswordRole === 'employee'
-                    ? 'Enter your Employee ID or registered email address. We will verify your staff profile and send a password reset OTP.'
-                    : 'Enter your administrator phone number (+91 91454 48010) or corporate email to initiate executive authorization recovery.'}
+                  Enter your administrator phone number (+91 91454 48010) or corporate email to initiate executive authorization recovery.
                 </p>
 
                 <div>
                   <label className="block text-[11px] font-bold text-[#201D1A] mb-1">
-                    {forgotPasswordRole === 'employee' ? 'Employee ID or Work Email' : 'Administrator Phone or Email'}
+                    Administrator Phone or Work Email
                   </label>
                   <input
                     type="text"
                     required
                     value={forgotInput}
                     onChange={(e) => setForgotInput(e.target.value)}
-                    placeholder={forgotPasswordRole === 'employee' ? 'e.g. ST-1005 or employee@sugartown.in' : 'e.g. 9145448010 or info@sugartown.in'}
+                    placeholder="e.g. 9145448010 or info@sugartown.in"
                     className="w-full px-3.5 py-2 text-xs font-semibold text-[#201D1A] bg-[#FAF8F2] focus:bg-white rounded-xl border border-[#E5E0D2] focus:border-[#E66A1F] focus:outline-none"
                   />
                 </div>

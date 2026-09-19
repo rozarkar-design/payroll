@@ -194,11 +194,28 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!saved) return INITIAL_EMPLOYEES;
     try {
       const parsed: Employee[] = JSON.parse(saved);
-      // Migrate existing USD scale to INR if detected (< 15000 base salary)
+      const PHONE_MAP: Record<string, string> = {
+        'ST-1001': '+91 98220 55100',
+        'ST-1002': '+91 98220 55102',
+        'ST-1003': '+91 98220 55120',
+        'ST-1004': '+91 98220 55146',
+        'ST-1005': '+91 98220 55155',
+        'ST-1006': '+91 98220 55180',
+        'ST-1007': '+91 98220 55165',
+        'ST-1008': '+91 98220 55172',
+        'ST-1009': '+91 98220 55134',
+        'ST-1010': '+91 98220 55195',
+        'ST-1011': '+91 98220 55198',
+        'ST-1012': '+91 98220 55210',
+      };
+
+      // Migrate existing USD scale to INR if detected (< 15000 base salary) & update phones
       return parsed.map(emp => {
+        const updatedPhone = (emp.phone && emp.phone.startsWith('+1') && PHONE_MAP[emp.id]) ? PHONE_MAP[emp.id] : emp.phone;
         if (emp.salary && emp.salary.baseSalary < 15000) {
           return {
             ...emp,
+            phone: updatedPhone,
             salary: {
               ...emp.salary,
               baseSalary: emp.salary.baseSalary * 10,
@@ -210,7 +227,10 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           };
         }
-        return emp;
+        return {
+          ...emp,
+          phone: updatedPhone
+        };
       });
     } catch {
       return INITIAL_EMPLOYEES;
@@ -368,24 +388,50 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return employees.find(e => e.id === 'ST-1005') || employees[0];
   });
 
-  const employeePortalLogin = (empIdOrPhone: string): { success: boolean; employee?: Employee; error?: string } => {
-    const query = empIdOrPhone.trim().toLowerCase();
-    const cleanDigits = query.replace(/\D/g, '');
-    const found = employees.find(e => 
-      e.id.toLowerCase() === query || 
-      (cleanDigits.length >= 7 && e.phone.replace(/\D/g, '').includes(cleanDigits)) ||
-      e.email.toLowerCase() === query
-    );
+  const employeePortalLogin = (registeredMobileOrInput: string): { success: boolean; employee?: Employee; error?: string } => {
+    const rawInput = registeredMobileOrInput.trim();
+    if (!rawInput) {
+      return { success: false, error: 'Please enter your registered mobile number.' };
+    }
+
+    const query = rawInput.toLowerCase();
+    const cleanDigits = rawInput.replace(/\D/g, '');
+
+    // Match primarily by registered mobile number:
+    // Support entering 10-digit number with or without +91, with spaces, dashes, or leading 0
+    const found = employees.find(e => {
+      const empPhoneDigits = e.phone.replace(/\D/g, '');
+      
+      // Flexible matching for phone numbers
+      const phoneMatches = cleanDigits.length >= 6 && (
+        empPhoneDigits.endsWith(cleanDigits) ||
+        cleanDigits.endsWith(empPhoneDigits) ||
+        (cleanDigits.length >= 10 && empPhoneDigits.slice(-10) === cleanDigits.slice(-10)) ||
+        empPhoneDigits.includes(cleanDigits) ||
+        cleanDigits.includes(empPhoneDigits)
+      );
+
+      // Also allow Employee ID (e.g. ST-1005) or work email as a fallback
+      const idMatches = e.id.toLowerCase() === query;
+      const emailMatches = e.email.toLowerCase() === query;
+
+      return phoneMatches || idMatches || emailMatches;
+    });
+
     if (found) {
       setEmployeePortalUser(found);
       setIsEmployeeLoggedIn(true);
       localStorage.setItem('sugartown_employee_auth_v1', 'true');
       localStorage.setItem('sugartown_employee_user_id_v1', found.id);
-      logAction('Employee Signed In', `${found.fullName} (${found.id}) logged into Employee Portal`, 'Employee');
+      logAction('Employee Signed In', `${found.fullName} (${found.id}) logged in via registered mobile (${found.phone})`, 'Employee');
       triggerConfetti();
       return { success: true, employee: found };
     }
-    return { success: false, error: 'Employee not found. Please enter valid Employee ID (e.g. ST-1005) or phone number.' };
+
+    return { 
+      success: false, 
+      error: `No employee account found for "${rawInput}". Please enter your registered mobile number (e.g. 98220 55155) or contact HR.` 
+    };
   };
 
   const employeeLogout = () => {

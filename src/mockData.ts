@@ -146,7 +146,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_corp',
     locationName: 'Sugartown Corporate HQ',
     email: 'eleanor@sugartown.in',
-    phone: '+1 (212) 555-0100',
+    phone: '+91 98220 55100',
     joiningDate: '2021-03-15',
     employmentStatus: 'Full-Time',
     salary: {
@@ -161,7 +161,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Thomas Sugartown',
       relationship: 'Spouse',
-      phone: '+1 (212) 555-0101',
+      phone: '+91 98220 55101',
       email: 'thomas@sugartown.in'
     },
     documents: [
@@ -183,7 +183,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_corp',
     locationName: 'Sugartown Corporate HQ',
     email: 'clara.dupont@sugartown.in',
-    phone: '+1 (212) 555-0102',
+    phone: '+91 98220 55102',
     joiningDate: '2022-01-10',
     employmentStatus: 'Full-Time',
     salary: {
@@ -198,7 +198,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Julian Dupont',
       relationship: 'Brother',
-      phone: '+1 (212) 555-0103'
+      phone: '+91 98220 55103'
     },
     documents: [
       { id: 'doc-3', name: 'HR Leadership Contract.pdf', type: 'Contract', uploadDate: '2022-01-10', size: '850 KB', status: 'Verified' },
@@ -219,7 +219,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_cafe_brooklyn',
     locationName: 'Sugartown Candy Café',
     email: 'marco.rossi@sugartown.in',
-    phone: '+1 (718) 555-0120',
+    phone: '+91 98220 55120',
     joiningDate: '2022-05-18',
     employmentStatus: 'Full-Time',
     salary: {
@@ -234,7 +234,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Sofia Rossi',
       relationship: 'Spouse',
-      phone: '+1 (718) 555-0121'
+      phone: '+91 98220 55121'
     },
     documents: [
       { id: 'doc-5', name: 'Store Manager Agreement.pdf', type: 'Contract', uploadDate: '2022-05-18', size: '780 KB', status: 'Verified' },
@@ -255,7 +255,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_factory',
     locationName: 'Artisan Confectionery Factory',
     email: 'antoine.bell@sugartown.in',
-    phone: '+1 (718) 555-0146',
+    phone: '+91 98220 55146',
     joiningDate: '2021-08-01',
     employmentStatus: 'Full-Time',
     salary: {
@@ -270,7 +270,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Camille Bell',
       relationship: 'Spouse',
-      phone: '+1 (718) 555-0147'
+      phone: '+91 98220 55147'
     },
     documents: [
       { id: 'doc-7', name: 'Factory Master Safety Cert.pdf', type: 'Food Safety License', uploadDate: '2024-04-10', size: '1.1 MB', status: 'Verified' }
@@ -290,7 +290,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_cafe_brooklyn',
     locationName: 'Sugartown Candy Café',
     email: 'maya.lin@sugartown.in',
-    phone: '+1 (718) 555-0155',
+    phone: '+91 98220 55155',
     joiningDate: '2023-04-12',
     employmentStatus: 'Full-Time',
     salary: {
@@ -305,7 +305,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'David Lin',
       relationship: 'Father',
-      phone: '+1 (718) 555-0156'
+      phone: '+91 98220 55156'
     },
     documents: [
       { id: 'doc-8', name: 'Employment Offer Letter.pdf', type: 'Contract', uploadDate: '2023-04-12', size: '540 KB', status: 'Verified' },
@@ -327,7 +327,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_corp',
     locationName: 'Sugartown Corporate HQ',
     email: 'oliver.vance@sugartown.in',
-    phone: '+1 (212) 555-0180',
+    phone: '+91 98220 55180',
     joiningDate: '2021-06-01',
     employmentStatus: 'Full-Time',
     salary: {
@@ -342,7 +342,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Rachel Vance',
       relationship: 'Spouse',
-      phone: '+1 (212) 555-0181'
+      phone: '+91 98220 55181'
     },
     documents: [
       { id: 'doc-11', name: 'Director Agreement.pdf', type: 'Contract', uploadDate: '2021-06-01', size: '1.2 MB', status: 'Verified' }
@@ -362,7 +362,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_store_broadway',
     locationName: 'Downtown Flagship Store',
     email: 'sienna.brooks@sugartown.in',
-    phone: '+1 (212) 555-0165',
+    phone: '+91 98220 55165',
     joiningDate: '2023-02-01',
     employmentStatus: 'Full-Time',
     salary: {
@@ -397,7 +397,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_factory',
     locationName: 'Artisan Confectionery Factory',
     email: 'liam.thorne@sugartown.in',
-    phone: '+1 (718) 555-0172',
+    phone: '+91 98220 55172',
     joiningDate: '2022-09-15',
     employmentStatus: 'Full-Time',
     salary: {
@@ -412,7 +412,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Grace Thorne',
       relationship: 'Mother',
-      phone: '+1 (718) 555-0173'
+      phone: '+91 98220 55173'
     },
     documents: [
       { id: 'doc-13', name: 'Production Specialist Agreement.pdf', type: 'Contract', uploadDate: '2022-09-15', size: '710 KB', status: 'Verified' }
@@ -432,7 +432,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_boutique_uptown',
     locationName: 'Uptown Sweet Boutique',
     email: 'aria.montgomery@sugartown.in',
-    phone: '+1 (212) 555-0134',
+    phone: '+91 98220 55134',
     joiningDate: '2023-09-01',
     employmentStatus: 'Full-Time',
     salary: {
@@ -447,7 +447,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Ethan Montgomery',
       relationship: 'Partner',
-      phone: '+1 (212) 555-0135'
+      phone: '+91 98220 55135'
     },
     documents: [
       { id: 'doc-14', name: 'Employment Agreement.pdf', type: 'Contract', uploadDate: '2023-09-01', size: '640 KB', status: 'Verified' }
@@ -467,7 +467,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_store_broadway',
     locationName: 'Downtown Flagship Store',
     email: 'noah.kim@sugartown.in',
-    phone: '+1 (212) 555-0195',
+    phone: '+91 98220 55195',
     joiningDate: '2024-03-10',
     employmentStatus: 'Part-Time',
     salary: {
@@ -482,7 +482,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Sun Kim',
       relationship: 'Mother',
-      phone: '+1 (212) 555-0196'
+      phone: '+91 98220 55196'
     },
     documents: [
       { id: 'doc-15', name: 'Part-Time Agreement.pdf', type: 'Contract', uploadDate: '2024-03-10', size: '490 KB', status: 'Verified' }
@@ -502,7 +502,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_factory',
     locationName: 'Artisan Confectionery Factory',
     email: 'elena.rostova@sugartown.in',
-    phone: '+1 (718) 555-0198',
+    phone: '+91 98220 55198',
     joiningDate: '2023-06-20',
     employmentStatus: 'Full-Time',
     salary: {
@@ -517,7 +517,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Alexei Rostov',
       relationship: 'Father',
-      phone: '+1 (718) 555-0199'
+      phone: '+91 98220 55199'
     },
     documents: [
       { id: 'doc-16', name: 'HACCP Auditor Certificate.pdf', type: 'Food Safety License', uploadDate: '2023-06-20', size: '920 KB', status: 'Verified' }
@@ -537,7 +537,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     locationId: 'loc_factory',
     locationName: 'Artisan Confectionery Factory',
     email: 'tariq.hassan@sugartown.in',
-    phone: '+1 (718) 555-0210',
+    phone: '+91 98220 55210',
     joiningDate: '2022-11-05',
     employmentStatus: 'Full-Time',
     salary: {
@@ -552,7 +552,7 @@ export const INITIAL_EMPLOYEES: Employee[] = [
     emergencyContact: {
       name: 'Amina Hassan',
       relationship: 'Spouse',
-      phone: '+1 (718) 555-0211'
+      phone: '+91 98220 55211'
     },
     documents: [
       { id: 'doc-17', name: 'Logistics Dispatch Agreement.pdf', type: 'Contract', uploadDate: '2022-11-05', size: '580 KB', status: 'Verified' }

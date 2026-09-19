@@ -96,11 +96,11 @@ export const EmployeePortalView: React.FC = () => {
     return diff > 0 ? diff : 1;
   };
 
-  // Handle Login
+  // Handle Login via Registered Mobile
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginInput.trim()) {
-      setLoginError('Please enter your Employee ID or phone number');
+      setLoginError('Please enter your registered mobile number');
       return;
     }
     const res = employeePortalLogin(loginInput);
@@ -108,14 +108,14 @@ export const EmployeePortalView: React.FC = () => {
       setLoginError('');
       setLoginInput('');
     } else {
-      setLoginError(res.error || 'Employee not found');
+      setLoginError(res.error || 'Employee not found with this registered mobile number');
     }
   };
 
   // Quick switch employee
   const handleQuickSwitch = (targetEmp: Employee) => {
     setEmployeePortalUser(targetEmp);
-    employeePortalLogin(targetEmp.id);
+    employeePortalLogin(targetEmp.phone || targetEmp.id);
     setLoginError('');
   };
 
@@ -193,8 +193,8 @@ export const EmployeePortalView: React.FC = () => {
               <ChevronLeft className="w-4 h-4" />
               <span>Back to Dashboard</span>
             </button>
-            <span className="text-[10px] font-bold text-[#396B5A] bg-[#EEF7F4] px-2 py-0.5 rounded-full">
-              Staff Portal
+            <span className="text-[10px] font-bold text-[#396B5A] bg-[#EEF7F4] px-2.5 py-1 rounded-full">
+              Password-free Login
             </span>
           </div>
 
@@ -204,7 +204,7 @@ export const EmployeePortalView: React.FC = () => {
             </div>
             <h2 className="text-2xl font-black text-[#201D1A] font-display">Staff & Employee Portal</h2>
             <p className="text-xs text-[#6B655D]">
-              Sign in to mark daily attendance, view monthly payslips, and manage leaves.
+              Enter your registered mobile number to access attendance, payslips, and leaves. No password required.
             </p>
           </div>
 
@@ -217,30 +217,50 @@ export const EmployeePortalView: React.FC = () => {
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-[#201D1A] uppercase tracking-wider mb-1.5">
-                Employee ID or Registered Phone
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                  Registered Mobile Number
+                </label>
+                <span className="text-[10px] text-[#396B5A] font-bold bg-[#EEF7F4] px-1.5 py-0.5 rounded">
+                  OTP / Direct Access
+                </span>
+              </div>
               <div className="relative">
-                <Hash className="w-4 h-4 text-[#6B655D] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Phone className="w-4 h-4 text-[#6B655D] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   id="employee-login-input"
-                  type="text"
+                  type="tel"
                   value={loginInput}
                   onChange={(e) => setLoginInput(e.target.value)}
-                  placeholder="e.g. ST-1005 or 555-0155"
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#E5E0D2] focus:border-[#E66A1F] focus:outline-none text-sm font-semibold text-[#201D1A]"
+                  placeholder="Enter 10-digit mobile (e.g. 98220 55155)"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl border border-[#E5E0D2] focus:border-[#396B5A] focus:outline-none text-sm font-semibold text-[#201D1A] transition-colors"
                   autoFocus
                 />
               </div>
             </div>
 
+            {/* Quick Demo Fill */}
+            <div className="p-3 bg-[#FAF8F2] border border-[#EDEAD9] rounded-2xl flex items-center justify-between text-xs text-[#6B655D]">
+              <div className="flex items-center gap-1.5 truncate mr-2">
+                <span className="w-2 h-2 rounded-full bg-[#396B5A] shrink-0" />
+                <span className="truncate">Demo: <strong className="text-[#201D1A]">98220 55155</strong> (Maya Lin)</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setLoginInput('98220 55155')}
+                className="text-[#396B5A] font-bold hover:underline shrink-0 cursor-pointer"
+              >
+                Auto-Fill
+              </button>
+            </div>
+
             <button
               id="employee-login-submit-btn"
               type="submit"
-              className="w-full py-3.5 px-4 bg-[#E66A1F] hover:bg-[#D25A12] text-white rounded-2xl text-sm font-bold shadow-md shadow-[#E66A1F]/25 flex items-center justify-center gap-2 transition-transform active:scale-98"
+              className="w-full py-3.5 px-4 bg-[#396B5A] hover:bg-[#2C5245] text-white rounded-2xl text-sm font-bold shadow-md shadow-[#396B5A]/25 flex items-center justify-center gap-2 transition-transform active:scale-98 cursor-pointer"
             >
               <UserCheck className="w-4 h-4" />
-              <span>Sign In to My Dashboard</span>
+              <span>Login to Employee Portal</span>
             </button>
           </form>
 
