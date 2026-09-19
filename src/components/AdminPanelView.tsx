@@ -41,7 +41,7 @@ import { SugartownLogo } from './SugartownLogo';
 import { SUGARTOWN_CORPORATE_INFO } from '../corporateInfo';
 import { OfficialPayslipModal } from './OfficialPayslipModal';
 import { HiringDocsAdminView } from './HiringDocsAdminView';
-import { Employee, LeaveRequest, PayrollRecord, EmployeeDocument } from '../types';
+import { Employee, LeaveRequest, PayrollRecord, EmployeeDocument, StoreLocationId } from '../types';
 
 export const AdminPanelView: React.FC = () => {
   const {

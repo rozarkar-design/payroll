@@ -50,14 +50,15 @@ export const EmployeePortalView: React.FC = () => {
     employeePortalUser,
     setEmployeePortalUser,
     employeePortalLogin,
-    setActiveTab
+    setActiveTab,
+    isEmployeeLoggedIn,
+    employeeLogout
   } = useHRMS();
 
   // Active view tab inside Employee Portal
   const [activeSubTab, setActiveSubTab] = useState<'attendance' | 'history' | 'payslips' | 'leave' | 'profile'>('attendance');
 
-  // Employee Login State
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
+  // Employee Login Form State
   const [loginInput, setLoginInput] = useState('');
   const [loginError, setLoginError] = useState('');
 
@@ -104,7 +105,6 @@ export const EmployeePortalView: React.FC = () => {
     }
     const res = employeePortalLogin(loginInput);
     if (res.success) {
-      setIsLoggedIn(true);
       setLoginError('');
       setLoginInput('');
     } else {
@@ -115,7 +115,7 @@ export const EmployeePortalView: React.FC = () => {
   // Quick switch employee
   const handleQuickSwitch = (targetEmp: Employee) => {
     setEmployeePortalUser(targetEmp);
-    setIsLoggedIn(true);
+    employeePortalLogin(targetEmp.id);
     setLoginError('');
   };
 
@@ -180,7 +180,7 @@ export const EmployeePortalView: React.FC = () => {
   const myPayslips = payrollRecords.filter(p => p.employeeId === emp.id);
 
   // If not logged in, show simple employee sign in UI
-  if (!isLoggedIn) {
+  if (!isEmployeeLoggedIn) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-white rounded-3xl border border-[#E5E0D2] shadow-xl p-8 space-y-6">
@@ -323,8 +323,8 @@ export const EmployeePortalView: React.FC = () => {
 
           <button
             id="employee-switch-btn"
-            onClick={() => setIsLoggedIn(false)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E0D2] text-xs font-semibold text-[#6B655D] hover:text-[#201D1A] hover:bg-[#FAF8F2] transition-colors"
+            onClick={employeeLogout}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E0D2] text-xs font-semibold text-[#6B655D] hover:text-[#201D1A] hover:bg-[#FAF8F2] transition-colors cursor-pointer"
             title="Sign out of your employee session"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -980,12 +980,12 @@ export const EmployeePortalView: React.FC = () => {
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">House Rent Allowance (HRA)</span>
-                  <span className="font-bold text-[#201D1A]">${emp.salary.hra.toLocaleString()}</span>
+                  <span className="font-bold text-[#201D1A]">${(emp.salary.hra ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
                   <span className="text-[#6B655D]">Sugartown Special Allowance</span>
-                  <span className="font-bold text-[#201D1A]">${emp.salary.allowances.toLocaleString()}</span>
+                  <span className="font-bold text-[#201D1A]">${(emp.salary.allowances ?? 0).toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
@@ -1001,7 +1001,7 @@ export const EmployeePortalView: React.FC = () => {
                 <div className="pt-2 flex justify-between items-center text-sm font-bold bg-[#EEF7F4] p-2.5 rounded-xl border border-[#A4CDBD]/40">
                   <span className="text-[#396B5A]">Est. Net Take-Home</span>
                   <span className="text-[#396B5A]">
-                    ${(emp.salary.baseSalary + emp.salary.hra + emp.salary.allowances - 340).toLocaleString()} / mo
+                    ${(emp.salary.baseSalary + (emp.salary.hra ?? 0) + (emp.salary.allowances ?? 0) - 340).toLocaleString()} / mo
                   </span>
                 </div>
               </div>

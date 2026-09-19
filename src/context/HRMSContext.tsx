@@ -63,9 +63,11 @@ interface HRMSContextType {
   setGlobalSearch: (q: string) => void;
 
   // Employee Portal User Session
+  isEmployeeLoggedIn: boolean;
   employeePortalUser: Employee;
   setEmployeePortalUser: (emp: Employee) => void;
   employeePortalLogin: (empIdOrPhone: string) => { success: boolean; employee?: Employee; error?: string };
+  employeeLogout: () => void;
 
   // Admin Portal Authentication
   isAdminLoggedIn: boolean;
@@ -284,7 +286,17 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentRole, employees]);
 
   // Employee Portal User State
+  const [isEmployeeLoggedIn, setIsEmployeeLoggedIn] = useState<boolean>(() => {
+    const saved = localStorage.getItem('sugartown_employee_auth_v1');
+    return saved === 'true';
+  });
+
   const [employeePortalUser, setEmployeePortalUser] = useState<Employee>(() => {
+    const savedId = localStorage.getItem('sugartown_employee_user_id_v1');
+    if (savedId) {
+      const found = employees.find(e => e.id === savedId);
+      if (found) return found;
+    }
     return employees.find(e => e.id === 'ST-1005') || employees[0];
   });
 
@@ -298,11 +310,22 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
     if (found) {
       setEmployeePortalUser(found);
+      setIsEmployeeLoggedIn(true);
+      localStorage.setItem('sugartown_employee_auth_v1', 'true');
+      localStorage.setItem('sugartown_employee_user_id_v1', found.id);
       logAction('Employee Signed In', `${found.fullName} (${found.id}) logged into Employee Portal`, 'Employee');
       triggerConfetti();
       return { success: true, employee: found };
     }
     return { success: false, error: 'Employee not found. Please enter valid Employee ID (e.g. ST-1005) or phone number.' };
+  };
+
+  const employeeLogout = () => {
+    setIsEmployeeLoggedIn(false);
+    localStorage.removeItem('sugartown_employee_auth_v1');
+    localStorage.removeItem('sugartown_employee_user_id_v1');
+    setActiveTab('dashboard');
+    logAction('Employee Logged Out', `${employeePortalUser.fullName} logged out`, 'Employee');
   };
 
   const logAction = (action: string, details: string, category: AuditLog['category']) => {
@@ -862,6 +885,7 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAdminSession(null);
     localStorage.removeItem(STORAGE_KEYS.ADMIN_AUTH);
     localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+    setActiveTab('dashboard');
     logAction('Admin Logged Out', 'Master Administrator session closed (9145448010)', 'Security');
   };
 
@@ -909,6 +933,7 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setActiveTab('dashboard');
     setIsAdminLoggedIn(false);
     setAdminSession(null);
+    setIsEmployeeLoggedIn(false);
   };
 
   return (
@@ -923,9 +948,11 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSelectedLocationFilter,
         globalSearch,
         setGlobalSearch,
+        isEmployeeLoggedIn,
         employeePortalUser,
         setEmployeePortalUser,
         employeePortalLogin,
+        employeeLogout,
         isAdminLoggedIn,
         adminSession,
         adminLogin,

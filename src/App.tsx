@@ -20,11 +20,17 @@ import { ApplyLeaveModal } from './components/ApplyLeaveModal';
 import { CorporateFooter } from './components/CorporateFooter';
 
 const MainLayout: React.FC = () => {
-  const { activeTab, setActiveTab } = useHRMS();
+  const { activeTab, setActiveTab, isAdminLoggedIn } = useHRMS();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isCheckInModalOpen, setIsCheckInModalOpen] = useState(false);
   const [isApplyLeaveModalOpen, setIsApplyLeaveModalOpen] = useState(false);
   const [initialSelectedEmployeeId, setInitialSelectedEmployeeId] = useState<string | undefined>(undefined);
+
+  // Left-side menu is strictly hidden on homepage and only visible for logged-in admins in admin modules
+  const isHomepage = activeTab === 'dashboard';
+  const isCareers = activeTab === 'careers';
+  const isEmployeePortal = activeTab === 'employee_portal' || activeTab === 'mobile_view';
+  const showSidebar = isAdminLoggedIn && !isHomepage && !isCareers && !isEmployeePortal;
 
   const handleSelectEmployee = (empId: string) => {
     setInitialSelectedEmployeeId(empId);
@@ -52,6 +58,11 @@ const MainLayout: React.FC = () => {
   };
 
   const renderActiveView = () => {
+    // If not logged in as Admin, internal operations views route to the Admin Login Portal
+    if (!isAdminLoggedIn && ['employees', 'attendance', 'leave', 'payroll', 'stores', 'recruitment', 'performance', 'communication', 'reports'].includes(activeTab)) {
+      return <AdminPanelView />;
+    }
+
     switch (activeTab) {
       case 'dashboard':
         return (
@@ -61,6 +72,7 @@ const MainLayout: React.FC = () => {
           />
         );
       case 'employee_portal':
+      case 'mobile_view':
         return <EmployeePortalView />;
       case 'careers':
         return <JobApplicationView />;
@@ -84,8 +96,6 @@ const MainLayout: React.FC = () => {
         return <AnnouncementsView />;
       case 'reports':
         return <ReportsView />;
-      case 'mobile_view':
-        return <EmployeePortalView />;
       default:
         return (
           <DashboardView
@@ -99,9 +109,9 @@ const MainLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#FAF8F2] text-[#201D1A] flex flex-col font-sans selection:bg-[#E66A1F]/20 selection:text-[#E66A1F]">
       
-      {/* Top Navigation Bar */}
+      {/* Top Navigation Bar: Displays only Employee Login, Admin Login, Apply Job on Homepage */}
       <Navbar
-        onToggleMobileMenu={() => setMobileMenuOpen(!mobileMenuOpen)}
+        onToggleMobileMenu={showSidebar ? () => setMobileMenuOpen(!mobileMenuOpen) : undefined}
         onOpenQuickAction={handleQuickAction}
         onOpenAuditLogs={() => setActiveTab('reports')}
       />
@@ -109,11 +119,13 @@ const MainLayout: React.FC = () => {
       {/* Main Workspace Body */}
       <div className="flex-1 flex overflow-hidden">
         
-        {/* Navigation Sidebar */}
-        <Sidebar
-          mobileOpen={mobileMenuOpen}
-          onCloseMobile={() => setMobileMenuOpen(false)}
-        />
+        {/* Navigation Sidebar: Strictly hidden on homepage and without admin login */}
+        {showSidebar && (
+          <Sidebar
+            mobileOpen={mobileMenuOpen}
+            onCloseMobile={() => setMobileMenuOpen(false)}
+          />
+        )}
 
         {/* Dynamic Content View Container */}
         <main className="flex-1 overflow-y-auto flex flex-col justify-between">
