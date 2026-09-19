@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Briefcase,
   Building,
@@ -22,7 +22,16 @@ import {
   FileText,
   Phone,
   Mail,
-  User
+  User,
+  Upload,
+  Paperclip,
+  Trash2,
+  DollarSign,
+  Calendar,
+  ShieldCheck,
+  FileCheck,
+  CheckSquare,
+  Square
 } from 'lucide-react';
 import { useHRMS } from '../context/HRMSContext';
 import { SugartownLogo } from './SugartownLogo';
@@ -121,6 +130,36 @@ const IQ_QUESTIONS: IQQuestion[] = [
   }
 ];
 
+const STORE_LOCATIONS = [
+  'Brooklyn Candy Café & Espresso Bar',
+  'Broadway Heritage Sweet Flagship',
+  'Uptown Artisan Chocolate Boutique',
+  'Central Confectionery Factory & Bakery',
+  'Corporate HQ & Design Center'
+];
+
+const SHIFT_OPTIONS = [
+  'Flexible / Any Shift',
+  'Morning Shift (7:00 AM - 3:30 PM)',
+  'Afternoon / Evening Shift (2:00 PM - 10:30 PM)',
+  'Night / Bakery Shift (10:00 PM - 6:30 AM)',
+  'Weekend Shift (Saturday - Sunday)'
+];
+
+interface UploadedFileMeta {
+  name: string;
+  size: string;
+  type: string;
+  uploadedAt: string;
+}
+
+interface DocumentUploadItem {
+  id: string;
+  title: string;
+  required: boolean;
+  file: UploadedFileMeta | null;
+}
+
 export const JobApplicationView: React.FC = () => {
   const { jobOpenings, submitJobApplication, triggerConfetti, setActiveTab } = useHRMS();
 
@@ -131,16 +170,65 @@ export const JobApplicationView: React.FC = () => {
   // Selected Job for Application
   const [selectedJob, setSelectedJob] = useState<JobOpening | null>(null);
 
-  // Application Step: 1 = Candidate Info, 2 = 10-Min IQ Test, 3 = Test Results & Submit, 4 = Success
+  // Application Step: 1 = Candidate Info, Locations, CV & Docs, 2 = 10-Min IQ Test, 3 = Test Results & Submit, 4 = Success
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
-  // Candidate Info State
+  // Candidate Info State (Fill Details)
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [qualification, setQualification] = useState<string>("Bachelor's Degree");
   const [experience, setExperience] = useState('2 years in boutique retail / hospitality');
+  const [expectedSalary, setExpectedSalary] = useState<string>('$3,800 / month');
+  const [noticePeriod, setNoticePeriod] = useState<string>('Immediate (within 7 days)');
+  const [currentCity, setCurrentCity] = useState<string>('New York, NY');
+  const [linkedinUrl, setLinkedinUrl] = useState<string>('');
   const [resumeSummary, setResumeSummary] = useState('');
   const [notes, setNotes] = useState('');
+
+  // Apply Locations
+  const [appliedLocations, setAppliedLocations] = useState<string[]>(['Brooklyn Candy Café & Espresso Bar']);
+  const [preferredShift, setPreferredShift] = useState<string>('Flexible / Any Shift');
+
+  // Upload CV
+  const [uploadedCv, setUploadedCv] = useState<UploadedFileMeta | null>({
+    name: 'Jordan_Miller_CV_2026.pdf',
+    size: '1.4 MB',
+    type: 'application/pdf',
+    uploadedAt: 'Attached'
+  });
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Upload Documents
+  const [documentsList, setDocumentsList] = useState<DocumentUploadItem[]>([
+    {
+      id: 'gov_id',
+      title: 'Government Photo ID (Aadhaar / Passport / DL)',
+      required: true,
+      file: { name: 'Government_Photo_ID_Aadhaar.pdf', size: '2.1 MB', type: 'application/pdf', uploadedAt: 'Attached' }
+    },
+    {
+      id: 'edu_cert',
+      title: 'Highest Education Certificate / Degree',
+      required: true,
+      file: { name: 'Bachelors_Degree_Certificate.pdf', size: '1.8 MB', type: 'application/pdf', uploadedAt: 'Attached' }
+    },
+    {
+      id: 'exp_letter',
+      title: 'Prior Experience Letter / Relieving Certificate',
+      required: false,
+      file: null
+    },
+    {
+      id: 'hygiene_cert',
+      title: 'Food Safety / Hygiene Certificate (FSSAI / ServSafe)',
+      required: false,
+      file: null
+    }
+  ]);
+
+  // Form Subtab inside Step 1
+  const [step1SubTab, setStep1SubTab] = useState<'details' | 'locations' | 'cv_documents'>('details');
 
   // IQ Test State
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes (600 seconds)
@@ -181,6 +269,7 @@ export const JobApplicationView: React.FC = () => {
   const handleOpenApplication = (job: JobOpening) => {
     setSelectedJob(job);
     setStep(1);
+    setStep1SubTab('details');
     setTimeLeft(600);
     setIsTimerRunning(false);
     setUserAnswers({});
@@ -189,13 +278,78 @@ export const JobApplicationView: React.FC = () => {
     setTestPassed(false);
   };
 
-  // Proceed to IQ Test (Step 2)
+  // Toggle location selection
+  const toggleLocation = (loc: string) => {
+    if (appliedLocations.includes(loc)) {
+      if (appliedLocations.length === 1) {
+        alert('Please keep at least one preferred store location selected.');
+        return;
+      }
+      setAppliedLocations(prev => prev.filter(l => l !== loc));
+    } else {
+      setAppliedLocations(prev => [...prev, loc]);
+    }
+  };
+
+  // Handle CV File Upload
+  const handleCvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setUploadedCv({
+        name: file.name,
+        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+        type: file.type || 'application/pdf',
+        uploadedAt: 'Just now'
+      });
+      triggerConfetti();
+    }
+  };
+
+  // Handle Document File Upload
+  const handleDocumentFileChange = (docId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setDocumentsList(prev => prev.map(d => {
+        if (d.id === docId) {
+          return {
+            ...d,
+            file: {
+              name: file.name,
+              size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+              type: file.type || 'application/pdf',
+              uploadedAt: 'Just now'
+            }
+          };
+        }
+        return d;
+      }));
+    }
+  };
+
+  // Remove Document
+  const removeDocument = (docId: string) => {
+    setDocumentsList(prev => prev.map(d => d.id === docId ? { ...d, file: null } : d));
+  };
+
+  // Proceed from Step 1 to IQ Test (Step 2)
   const handleStartIQTest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim() || !email.trim() || !phone.trim()) {
-      alert('Please fill in your name, email, and phone number.');
+      alert('Please fill in your full name, email, and phone number.');
+      setStep1SubTab('details');
       return;
     }
+    if (appliedLocations.length === 0) {
+      alert('Please select at least one preferred store location.');
+      setStep1SubTab('locations');
+      return;
+    }
+    if (!uploadedCv) {
+      alert('Please upload or attach your CV / Resume.');
+      setStep1SubTab('cv_documents');
+      return;
+    }
+
     setStep(2);
     setTimeLeft(600);
     setIsTimerRunning(true);
@@ -250,11 +404,18 @@ export const JobApplicationView: React.FC = () => {
       email,
       phone,
       experience,
-      resumeSummary: resumeSummary || `Qualified candidate with ${experience}. Passed cognitive evaluation with score of ${scorePercentage}%.`,
-      notes: notes || `IQ Assessment verified: ${scorePercentage}% (Threshold ≥ 70%).`,
+      resumeSummary: resumeSummary || `Qualified candidate with ${experience}. Passed cognitive evaluation with score of ${scorePercentage}%. Attached CV: ${uploadedCv?.name || 'Resume'}.`,
+      notes: notes || `IQ Assessment verified: ${scorePercentage}% (Threshold ≥ 70%). Locations: ${appliedLocations.join(', ')}. Shift: ${preferredShift}.`,
       department: selectedJob.department,
       iqScore: scorePercentage,
-      iqPassed: true
+      iqPassed: true,
+      appliedLocations,
+      preferredShift,
+      cvFileName: uploadedCv?.name,
+      cvFileSize: uploadedCv?.size,
+      documentsCount: documentsList.filter(d => d.file !== null).length,
+      qualification,
+      expectedSalary
     });
 
     setStep(4);
@@ -298,16 +459,27 @@ export const JobApplicationView: React.FC = () => {
             Join the Sugartown Confectionery Family
           </h1>
           <p className="text-xs sm:text-sm text-stone-300">
-            Explore open opportunities across <strong>Store Staff, Store Manager, Cluster Manager, Sales, Marketing, Operation, Backend & Corporate</strong>.
-            All applications include a standard 10-minute IQ and cognitive logic test (≥ 70% passing threshold).
+            Apply for positions across <strong>Store Staff, Store Manager, Cluster Manager, Sales, Marketing, Operation & Backend</strong>.
+            Fill candidate details, choose preferred store locations, upload your CV and verification documents, and complete the standard 10-minute IQ evaluation.
           </p>
         </div>
 
-        <div className="shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+          {jobOpenings.length > 0 && (
+            <button
+              id="careers-fast-track-apply-btn"
+              onClick={() => handleOpenApplication(jobOpenings[0])}
+              className="px-4 py-2.5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold flex items-center gap-2 shadow-sm transition-all"
+            >
+              <Brain className="w-4 h-4" />
+              <span>Apply for Job (Fast Track)</span>
+            </button>
+          )}
+
           <button
             id="careers-back-to-dashboard-btn"
             onClick={() => setActiveTab('dashboard')}
-            className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition-colors border border-white/15"
+            className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold flex items-center gap-2 transition-colors border border-white/15"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Dashboard</span>
@@ -318,25 +490,21 @@ export const JobApplicationView: React.FC = () => {
       {/* Official Legal Employer Notice */}
       <div className="bg-[#FAF8F2] rounded-2xl border border-[#E5E0D2] p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs text-[#201D1A]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-white border border-[#E5E0D2] flex items-center justify-center text-[#E66A1F] shrink-0">
-            <Building className="w-4 h-4" />
-          </div>
+          <SugartownLogo size="sm" />
           <div>
-            <div className="font-bold text-[#201D1A]">
-              Hiring Entity: {SUGARTOWN_CORPORATE_INFO.legalName}
-            </div>
-            <div className="text-[11px] text-[#6B655D]">
-              Registered Office: {SUGARTOWN_CORPORATE_INFO.registeredAddress.fullFormatted}
-            </div>
+            <p className="font-bold">{SUGARTOWN_CORPORATE_INFO.legalName}</p>
+            <p className="text-[#6B655D] text-[11px]">
+              CIN: {SUGARTOWN_CORPORATE_INFO.cin} · Registered HR & Talent Compliance
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
-          <span className="font-mono text-[11px] font-bold text-[#E66A1F] bg-white px-2 py-0.5 rounded border border-[#EDEAD9]">
-            CIN: {SUGARTOWN_CORPORATE_INFO.cin}
-          </span>
+
+        <div className="flex items-center gap-3 text-[11px] text-[#6B655D]">
+          <span>Helpline: {SUGARTOWN_CORPORATE_INFO.phone}</span>
+          <span>·</span>
           <a
             href={`mailto:${SUGARTOWN_CORPORATE_INFO.careersEmail}`}
-            className="text-[11px] font-semibold text-[#396B5A] bg-[#EEF7F4] hover:bg-[#A4CDBD]/40 px-2 py-0.5 rounded border border-[#A4CDBD]/40 transition-colors"
+            className="text-[#E66A1F] font-semibold hover:underline"
           >
             Email: {SUGARTOWN_CORPORATE_INFO.careersEmail}
           </a>
@@ -399,11 +567,11 @@ export const JobApplicationView: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="font-black text-base text-[#201D1A] font-display leading-snug">
+                <h3 className="text-base font-bold text-[#201D1A] group-hover:text-[#E66A1F]">
                   {job.title}
                 </h3>
                 <p className="text-xs text-[#6B655D] flex items-center gap-1.5 mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-[#E66A1F] shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 text-[#E66A1F]" />
                   <span>{job.locationName}</span>
                 </p>
               </div>
@@ -412,31 +580,37 @@ export const JobApplicationView: React.FC = () => {
                 {job.description}
               </p>
 
-              {/* Requirements */}
-              <div className="space-y-1 pt-1 border-t border-[#EDEAD9]">
-                <span className="text-[10px] font-bold text-[#201D1A] uppercase">Key Requirements:</span>
-                <ul className="text-[11px] text-[#6B655D] space-y-0.5">
-                  {job.requirements.slice(0, 3).map((req, idx) => (
-                    <li key={idx} className="flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#E66A1F]" />
-                      <span>{req}</span>
-                    </li>
+              {/* Requirements tags */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-bold text-[#6B655D] uppercase tracking-wider block">
+                  Requirements:
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {job.requirements.slice(0, 2).map((req, idx) => (
+                    <span key={idx} className="text-[10px] bg-[#FAF8F2] text-[#6B655D] px-2 py-0.5 rounded-md border border-[#EDEAD9]">
+                      {req}
+                    </span>
                   ))}
-                </ul>
+                  {job.requirements.length > 2 && (
+                    <span className="text-[10px] text-[#6B655D] self-center">
+                      +{job.requirements.length - 2} more
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#EDEAD9] flex items-center justify-between">
-              <span className="text-[11px] text-[#6B655D]">
-                {job.openingsCount} opening{job.openingsCount > 1 ? 's' : ''} · {job.applicantsCount} applied
-              </span>
+            <div className="pt-3 border-t border-[#EDEAD9] flex items-center justify-between">
+              <div className="text-[11px] text-[#6B655D]">
+                <strong className="text-[#201D1A]">{job.openingsCount}</strong> openings · {job.applicantsCount} applicants
+              </div>
 
               <button
                 id={`apply-job-btn-${job.id}`}
                 onClick={() => handleOpenApplication(job)}
-                className="py-2 px-4 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs transition-transform active:scale-98"
+                className="py-2 px-4 bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-transform active:scale-95"
               >
-                <span>Apply with IQ Test</span>
+                <span>Apply Now</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -444,299 +618,720 @@ export const JobApplicationView: React.FC = () => {
         ))}
       </div>
 
-      {/* ========================================================== */}
-      {/* MULTI-STEP APPLICATION & MANDATORY 10-MIN IQ TEST MODAL */}
-      {/* ========================================================== */}
+      {/* ==================================================================== */}
+      {/* MULTI-STEP JOB APPLICATION & COGNITIVE IQ TEST MODAL */}
+      {/* ==================================================================== */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-6 border border-[#E5E0D2] shadow-2xl animate-in zoom-in-95 max-h-[92vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-[#E5E0D2] shadow-2xl max-w-3xl w-full p-5 sm:p-7 space-y-5 animate-in zoom-in-95 duration-200 my-auto max-h-[92vh] overflow-y-auto">
             
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-[#EDEAD9] pb-4">
-              <div>
-                <span className="text-[10px] font-bold text-[#E66A1F] uppercase tracking-wider block">
-                  Application Process · {selectedJob.department}
-                </span>
-                <h2 className="text-xl font-black text-[#201D1A] font-display">
-                  {selectedJob.title}
-                </h2>
-                <p className="text-xs text-[#6B655D] flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3 text-[#E66A1F]" />
-                  <span>{selectedJob.locationName}</span>
-                </p>
+            <div className="flex items-center justify-between pb-4 border-b border-[#EDEAD9]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FEF4ED] text-[#E66A1F] flex items-center justify-center font-bold">
+                  <Brain className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-[#201D1A]">
+                    {selectedJob.title}
+                  </h2>
+                  <p className="text-xs text-[#6B655D]">
+                    {selectedJob.department} Department · Sugartown Confectionery
+                  </p>
+                </div>
               </div>
 
-              {step !== 2 && (
-                <button
-                  onClick={() => setSelectedJob(null)}
-                  className="p-2 rounded-xl border border-[#EDEAD9] text-[#6B655D] hover:text-[#201D1A]"
-                >
-                  ✕
-                </button>
-              )}
+              <button
+                onClick={() => setSelectedJob(null)}
+                className="p-2 rounded-xl text-[#6B655D] hover:text-[#201D1A] hover:bg-[#FAF8F2]"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Step Progress Indicator */}
-            <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            {/* Step Progress Bar */}
+            <div className="grid grid-cols-4 gap-2 text-center text-xs">
               <div className={`p-2 rounded-xl border font-bold ${
                 step === 1 ? 'bg-[#FEF4ED] text-[#E66A1F] border-[#E66A1F]' : 'bg-[#FAF8F2] text-[#6B655D] border-[#EDEAD9]'
               }`}>
-                1. Candidate Info
+                1. Fill Details
+              </div>
+              <div className={`p-2 rounded-xl border font-bold ${
+                step === 1 && step1SubTab !== 'details' ? 'bg-[#FEF4ED] text-[#E66A1F] border-[#E66A1F]' : 'bg-[#FAF8F2] text-[#6B655D] border-[#EDEAD9]'
+              }`}>
+                2. Locations & CV
               </div>
               <div className={`p-2 rounded-xl border font-bold flex items-center justify-center gap-1 ${
                 step === 2 ? 'bg-[#FEF4ED] text-[#E66A1F] border-[#E66A1F]' : 'bg-[#FAF8F2] text-[#6B655D] border-[#EDEAD9]'
               }`}>
                 <Brain className="w-3.5 h-3.5" />
-                <span>2. 10-Min IQ Test</span>
+                <span>3. 10-Min IQ Test</span>
               </div>
               <div className={`p-2 rounded-xl border font-bold ${
                 step >= 3 ? 'bg-[#FEF4ED] text-[#E66A1F] border-[#E66A1F]' : 'bg-[#FAF8F2] text-[#6B655D] border-[#EDEAD9]'
               }`}>
-                3. Verification & Submit
+                4. Confirmation
               </div>
             </div>
 
-            {/* STEP 1: CANDIDATE INFO */}
+            {/* ============================================================== */}
+            {/* STEP 1: CANDIDATE INFO, APPLY LOCATIONS, CV & DOCUMENTS */}
+            {/* ============================================================== */}
             {step === 1 && (
               <form onSubmit={handleStartIQTest} className="space-y-4 text-xs">
-                <div className="p-3.5 bg-[#FEF4ED] rounded-2xl border border-[#E66A1F]/30 flex items-start gap-2.5">
+                
+                {/* Notice banner */}
+                <div className="p-3 bg-[#FEF4ED] rounded-2xl border border-[#E66A1F]/30 flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 text-[#E66A1F] shrink-0 mt-0.5" />
                   <p className="text-[#201D1A]">
-                    <strong>Mandatory IQ Evaluation:</strong> Before submitting your application, you must complete a 10-minute cognitive logic assessment. You must score <strong>at least 70%</strong> to proceed with your submission.
+                    <strong>Required Steps:</strong> Fill candidate details, select applied store locations, attach your CV and verification documents, then complete the mandatory 10-minute online IQ test (minimum passing threshold ≥ 70%).
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-[#201D1A] mb-1">Full Legal Name</label>
-                    <input
-                      id="candidate-fullname-input"
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Jordan Miller"
-                      className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#201D1A] mb-1">Email Address</label>
-                    <input
-                      id="candidate-email-input"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="jordan.miller@example.com"
-                      className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#201D1A] mb-1">Mobile Phone Number</label>
-                    <input
-                      id="candidate-phone-input"
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+1 (555) 019-2834"
-                      className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-[#201D1A] mb-1">Relevant Experience</label>
-                    <input
-                      id="candidate-experience-input"
-                      type="text"
-                      value={experience}
-                      onChange={(e) => setExperience(e.target.value)}
-                      placeholder="e.g. 2 years in coffee shop or retail store"
-                      className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#201D1A] mb-1">Resume Summary & Qualifications</label>
-                  <textarea
-                    id="candidate-resume-textarea"
-                    rows={2}
-                    value={resumeSummary}
-                    onChange={(e) => setResumeSummary(e.target.value)}
-                    placeholder="Brief highlights of past store, management, or technical accomplishments..."
-                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#201D1A] mb-1">Why Sugartown? (Motivation)</label>
-                  <textarea
-                    id="candidate-notes-textarea"
-                    rows={2}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Tell us what excites you about crafting sweet moments with our team..."
-                    className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
-                  />
-                </div>
-
-                <div className="pt-2 flex justify-end">
+                {/* Step 1 Sub Navigation */}
+                <div className="flex items-center gap-2 border-b border-[#EDEAD9] pb-2">
                   <button
-                    id="start-iq-test-btn"
-                    type="submit"
-                    className="py-3 px-6 bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold rounded-2xl flex items-center gap-2 shadow-md shadow-[#E66A1F]/25 transition-transform active:scale-98"
+                    type="button"
+                    onClick={() => setStep1SubTab('details')}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition-colors ${
+                      step1SubTab === 'details'
+                        ? 'bg-[#201D1A] text-white'
+                        : 'bg-[#FAF8F2] text-[#6B655D] hover:bg-[#EDEAD9]'
+                    }`}
                   >
-                    <Brain className="w-4 h-4" />
-                    <span>Proceed to 10-Min IQ Test (10 Questions)</span>
+                    1. Personal Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep1SubTab('locations')}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition-colors ${
+                      step1SubTab === 'locations'
+                        ? 'bg-[#201D1A] text-white'
+                        : 'bg-[#FAF8F2] text-[#6B655D] hover:bg-[#EDEAD9]'
+                    }`}
+                  >
+                    2. Store Locations & Shifts ({appliedLocations.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep1SubTab('cv_documents')}
+                    className={`px-3 py-1.5 rounded-xl font-bold transition-colors flex items-center gap-1.5 ${
+                      step1SubTab === 'cv_documents'
+                        ? 'bg-[#201D1A] text-white'
+                        : 'bg-[#FAF8F2] text-[#6B655D] hover:bg-[#EDEAD9]'
+                    }`}
+                  >
+                    <Paperclip className="w-3 h-3" />
+                    <span>3. Upload CV & Documents</span>
+                    {uploadedCv && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#396B5A]" />
+                    )}
                   </button>
                 </div>
+
+                {/* ------------------------------------------------------------ */}
+                {/* SUBTAB A: CANDIDATE PERSONAL & PROFESSIONAL DETAILS */}
+                {/* ------------------------------------------------------------ */}
+                {step1SubTab === 'details' && (
+                  <div className="space-y-3 animate-in fade-in duration-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Full Legal Name *</label>
+                        <input
+                          id="candidate-fullname-input"
+                          type="text"
+                          required
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder="e.g. Jordan Miller"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Email Address *</label>
+                        <input
+                          id="candidate-email-input"
+                          type="email"
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="jordan.miller@example.com"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Mobile Phone Number *</label>
+                        <input
+                          id="candidate-phone-input"
+                          type="tel"
+                          required
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="+1 (555) 019-2834"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Highest Qualification</label>
+                        <select
+                          id="candidate-qualification-select"
+                          value={qualification}
+                          onChange={(e) => setQualification(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          <option value="High School Diploma">High School Diploma</option>
+                          <option value="Associate Degree / Diploma">Associate Degree / Diploma</option>
+                          <option value="Bachelor's Degree">Bachelor's Degree</option>
+                          <option value="Master's Degree">Master's Degree</option>
+                          <option value="Culinary Arts & Bakery Certification">Culinary Arts & Bakery Certification</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Relevant Experience</label>
+                        <input
+                          id="candidate-experience-input"
+                          type="text"
+                          value={experience}
+                          onChange={(e) => setExperience(e.target.value)}
+                          placeholder="e.g. 2 years in retail store or cafe"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Expected Monthly CTC / Salary</label>
+                        <input
+                          id="candidate-expected-salary-input"
+                          type="text"
+                          value={expectedSalary}
+                          onChange={(e) => setExpectedSalary(e.target.value)}
+                          placeholder="e.g. $3,800 / month"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Notice Period / Earliest Join Date</label>
+                        <select
+                          id="candidate-notice-period-select"
+                          value={noticePeriod}
+                          onChange={(e) => setNoticePeriod(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          <option value="Immediate (within 7 days)">Immediate (within 7 days)</option>
+                          <option value="15 Days Notice">15 Days Notice</option>
+                          <option value="30 Days Notice">30 Days Notice</option>
+                          <option value="Serving Notice (Available Soon)">Serving Notice (Available Soon)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Current City / Location</label>
+                        <input
+                          id="candidate-city-input"
+                          type="text"
+                          value={currentCity}
+                          onChange={(e) => setCurrentCity(e.target.value)}
+                          placeholder="e.g. New York, NY"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1">LinkedIn / Portfolio URL (Optional)</label>
+                      <input
+                        id="candidate-linkedin-input"
+                        type="url"
+                        value={linkedinUrl}
+                        onChange={(e) => setLinkedinUrl(e.target.value)}
+                        placeholder="https://linkedin.com/in/yourname"
+                        className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1">Resume Summary & Key Achievements</label>
+                      <textarea
+                        id="candidate-resume-textarea"
+                        rows={2}
+                        value={resumeSummary}
+                        onChange={(e) => setResumeSummary(e.target.value)}
+                        placeholder="Brief highlights of past store, management, culinary, or technical experience..."
+                        className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1">Why Sugartown? (Motivation)</label>
+                      <textarea
+                        id="candidate-notes-textarea"
+                        rows={2}
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Tell us what excites you about crafting sweet moments with our team..."
+                        className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                      />
+                    </div>
+
+                    <div className="pt-2 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setStep1SubTab('locations')}
+                        className="py-2.5 px-5 bg-[#201D1A] hover:bg-black text-white rounded-xl font-bold flex items-center gap-1.5"
+                      >
+                        <span>Next: Select Locations</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ------------------------------------------------------------ */}
+                {/* SUBTAB B: APPLY LOCATIONS & SHIFT PREFERENCES */}
+                {/* ------------------------------------------------------------ */}
+                {step1SubTab === 'locations' && (
+                  <div className="space-y-4 animate-in fade-in duration-100">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="font-bold text-[#201D1A] flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-[#E66A1F]" />
+                          <span>Select Store & Office Locations You Wish to Apply For *</span>
+                        </label>
+                        <span className="text-[11px] text-[#6B655D]">
+                          {appliedLocations.length} location(s) selected
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {STORE_LOCATIONS.map(loc => {
+                          const isSelected = appliedLocations.includes(loc);
+                          return (
+                            <div
+                              key={loc}
+                              onClick={() => toggleLocation(loc)}
+                              className={`p-3 rounded-2xl border cursor-pointer flex items-center justify-between transition-all ${
+                                isSelected
+                                  ? 'bg-[#FEF4ED] border-[#E66A1F] text-[#201D1A] shadow-2xs'
+                                  : 'bg-[#FAF8F2] border-[#EDEAD9] text-[#6B655D] hover:border-[#E66A1F]/50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                {isSelected ? (
+                                  <CheckSquare className="w-4 h-4 text-[#E66A1F] shrink-0" />
+                                ) : (
+                                  <Square className="w-4 h-4 text-[#6B655D] shrink-0" />
+                                )}
+                                <span className="font-semibold text-xs">{loc}</span>
+                              </div>
+                              {isSelected && (
+                                <span className="text-[10px] font-bold bg-[#E66A1F] text-white px-2 py-0.5 rounded-md">
+                                  Selected
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1.5">
+                        Preferred Shift Schedule
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {SHIFT_OPTIONS.map(shift => (
+                          <label
+                            key={shift}
+                            className={`p-2.5 rounded-xl border flex items-center gap-2.5 cursor-pointer text-xs ${
+                              preferredShift === shift
+                                ? 'bg-[#EEF7F4] border-[#396B5A] text-[#201D1A] font-bold'
+                                : 'bg-[#FAF8F2] border-[#EDEAD9] text-[#6B655D]'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="shift_preference"
+                              value={shift}
+                              checked={preferredShift === shift}
+                              onChange={(e) => setPreferredShift(e.target.value)}
+                              className="accent-[#396B5A]"
+                            />
+                            <span>{shift}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setStep1SubTab('details')}
+                        className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] hover:bg-[#FAF8F2] font-semibold"
+                      >
+                        Back to Details
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setStep1SubTab('cv_documents')}
+                        className="py-2.5 px-5 bg-[#201D1A] hover:bg-black text-white rounded-xl font-bold flex items-center gap-1.5"
+                      >
+                        <span>Next: Upload CV & Documents</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ------------------------------------------------------------ */}
+                {/* SUBTAB C: UPLOAD CV & VERIFICATION DOCUMENTS */}
+                {/* ------------------------------------------------------------ */}
+                {step1SubTab === 'cv_documents' && (
+                  <div className="space-y-4 animate-in fade-in duration-100">
+                    
+                    {/* CV / Resume Upload Box */}
+                    <div className="bg-[#FAF8F2] p-4 rounded-2xl border border-[#EDEAD9] space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold text-[#201D1A] flex items-center gap-1.5 text-xs">
+                          <FileText className="w-4 h-4 text-[#E66A1F]" />
+                          <span>Upload CV / Resume * (PDF, DOC, DOCX up to 10MB)</span>
+                        </label>
+                        {uploadedCv && (
+                          <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" /> CV Attached
+                          </span>
+                        )}
+                      </div>
+
+                      {uploadedCv ? (
+                        <div className="p-3 bg-white rounded-xl border border-[#A4CDBD]/50 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-[#EEF7F4] text-[#396B5A] flex items-center justify-center font-bold">
+                              <FileCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-[#201D1A] text-xs">{uploadedCv.name}</p>
+                              <p className="text-[10px] text-[#6B655D]">{uploadedCv.size} · Attached {uploadedCv.uploadedAt}</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => cvFileInputRef.current?.click()}
+                              className="px-2.5 py-1 text-[11px] font-bold text-[#396B5A] hover:bg-[#EEF7F4] rounded-lg"
+                            >
+                              Change
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setUploadedCv(null)}
+                              className="p-1 text-red-500 hover:bg-red-50 rounded-lg"
+                              title="Remove CV"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => cvFileInputRef.current?.click()}
+                          className="border-2 border-dashed border-[#E5E0D2] hover:border-[#E66A1F] p-5 rounded-2xl text-center bg-white cursor-pointer transition-colors"
+                        >
+                          <Upload className="w-6 h-6 text-[#E66A1F] mx-auto mb-1.5" />
+                          <p className="font-bold text-xs text-[#201D1A]">Click to browse or drop your CV / Resume here</p>
+                          <p className="text-[10px] text-[#6B655D] mt-0.5">Supported formats: PDF, DOC, DOCX</p>
+                        </div>
+                      )}
+
+                      <input
+                        ref={cvFileInputRef}
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={handleCvFileChange}
+                        className="hidden"
+                      />
+                    </div>
+
+                    {/* Hiring Documents Upload Grid */}
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <label className="font-bold text-[#201D1A] flex items-center gap-1.5 text-xs">
+                          <ShieldCheck className="w-4 h-4 text-[#396B5A]" />
+                          <span>Hiring & Verification Documents</span>
+                        </label>
+                        <span className="text-[10px] text-[#6B655D]">
+                          {documentsList.filter(d => d.file !== null).length} / {documentsList.length} Uploaded
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {documentsList.map(doc => (
+                          <div
+                            key={doc.id}
+                            className="p-3 bg-white rounded-2xl border border-[#EDEAD9] space-y-2 flex flex-col justify-between"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="font-bold text-xs text-[#201D1A]">
+                                  {doc.title}
+                                </p>
+                                <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded ${
+                                  doc.required ? 'bg-[#FEF4ED] text-[#E66A1F]' : 'bg-[#FAF8F2] text-[#6B655D]'
+                                }`}>
+                                  {doc.required ? 'Mandatory' : 'Optional / Supporting'}
+                                </span>
+                              </div>
+
+                              {doc.file ? (
+                                <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                                  <Check className="w-3 h-3" /> Attached
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-[#6B655D] shrink-0">
+                                  Pending
+                                </span>
+                              )}
+                            </div>
+
+                            {doc.file ? (
+                              <div className="flex items-center justify-between p-2 bg-[#FAF8F2] rounded-xl text-[11px]">
+                                <span className="font-medium truncate max-w-[170px] text-[#201D1A]">
+                                  {doc.file.name} ({doc.file.size})
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => removeDocument(doc.id)}
+                                  className="text-red-500 hover:text-red-700 p-0.5"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label className="py-2 px-3 border border-[#EDEAD9] hover:border-[#E66A1F] rounded-xl text-center cursor-pointer bg-[#FAF8F2] hover:bg-white text-[11px] font-bold text-[#6B655D] hover:text-[#201D1A] flex items-center justify-center gap-1.5 transition-colors">
+                                <Upload className="w-3 h-3 text-[#E66A1F]" />
+                                <span>Upload {doc.required ? 'File *' : 'File'}</span>
+                                <input
+                                  type="file"
+                                  accept=".pdf,.jpg,.jpeg,.png,.doc"
+                                  onChange={(e) => handleDocumentFileChange(doc.id, e)}
+                                  className="hidden"
+                                />
+                              </label>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Submit Step 1 to enter IQ Test */}
+                    <div className="pt-3 border-t border-[#EDEAD9] flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => setStep1SubTab('locations')}
+                        className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] hover:bg-[#FAF8F2] font-semibold"
+                      >
+                        Back to Locations
+                      </button>
+
+                      <button
+                        id="start-iq-test-btn"
+                        type="submit"
+                        className="py-3 px-6 bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold rounded-2xl flex items-center gap-2 shadow-md shadow-[#E66A1F]/25 transition-transform active:scale-98"
+                      >
+                        <Brain className="w-4 h-4" />
+                        <span>Proceed to 10-Min Cognitive IQ Test</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
               </form>
             )}
 
-            {/* STEP 2: 10-MINUTE IQ TEST */}
+            {/* ============================================================== */}
+            {/* STEP 2: 10-MINUTE IQ & COGNITIVE TEST */}
+            {/* ============================================================== */}
             {step === 2 && (
-              <div className="space-y-5">
+              <div className="space-y-5 animate-in fade-in duration-150">
                 
-                {/* Fixed Timer Header */}
-                <div className="sticky top-0 bg-white z-10 py-2 border-b border-[#EDEAD9] flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Brain className="w-5 h-5 text-[#E66A1F]" />
+                {/* Timer Bar */}
+                <div className="p-4 rounded-2xl bg-[#201D1A] text-white flex items-center justify-between sticky top-0 z-20 shadow-md">
+                  <div className="flex items-center gap-2.5">
+                    <Timer className={`w-5 h-5 ${timeLeft <= 120 ? 'text-red-400 animate-pulse' : 'text-[#E66A1F]'}`} />
                     <div>
-                      <h3 className="font-black text-sm text-[#201D1A]">Cognitive Aptitude Evaluation</h3>
-                      <p className="text-[10px] text-[#6B655D]">10 Questions · Passing Requirement ≥ 70%</p>
+                      <span className="text-[10px] uppercase font-bold text-stone-400 block tracking-wider">
+                        Time Remaining
+                      </span>
+                      <span className={`text-lg font-black font-mono tracking-wider ${
+                        timeLeft <= 120 ? 'text-red-400' : 'text-white'
+                      }`}>
+                        {formatTime(timeLeft)}
+                      </span>
                     </div>
                   </div>
 
-                  {/* 10-Minute Countdown Display */}
-                  <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl border font-mono font-bold text-sm ${
-                    timeLeft < 120
-                      ? 'bg-red-50 text-red-600 border-red-200 animate-pulse'
-                      : 'bg-[#FAF8F2] text-[#201D1A] border-[#EDEAD9]'
-                  }`}>
-                    <Timer className="w-4 h-4 text-[#E66A1F]" />
-                    <span>{formatTime(timeLeft)}</span>
+                  <div className="text-right">
+                    <span className="text-[10px] text-stone-400 block">Required Passing Grade</span>
+                    <span className="text-xs font-bold text-[#FF7A29]">≥ 70% (7 of 10 Correct)</span>
                   </div>
                 </div>
 
-                {/* Questions List */}
-                <div className="space-y-4">
+                {/* Question List */}
+                <div className="space-y-4 max-h-[50vh] overflow-y-auto pr-1">
                   {IQ_QUESTIONS.map((q, qIndex) => {
                     const selectedOpt = userAnswers[q.id];
-
                     return (
                       <div
                         key={q.id}
-                        className="p-4 rounded-2xl border border-[#EDEAD9] bg-[#FAF8F2] space-y-3"
+                        className="p-4 rounded-2xl bg-[#FAF8F2] border border-[#EDEAD9] space-y-3"
                       >
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-[10px] font-bold text-[#E66A1F] uppercase tracking-wider">
-                            Q{qIndex + 1} · {q.category}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#201D1A]">
+                            Question {qIndex + 1} of {IQ_QUESTIONS.length}
                           </span>
-                          {selectedOpt !== undefined && (
-                            <span className="text-[10px] font-bold text-[#396B5A] flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" /> Answered
-                            </span>
-                          )}
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-[#EDEAD9] text-[#6B655D]">
+                            {q.category}
+                          </span>
                         </div>
 
-                        <p className="font-bold text-xs text-[#201D1A]">
+                        <p className="text-xs font-semibold text-[#201D1A] leading-relaxed">
                           {q.question}
                         </p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                          {q.options.map((opt, optIndex) => (
-                            <button
-                              key={optIndex}
-                              type="button"
-                              onClick={() => handleSelectAnswer(q.id, optIndex)}
-                              className={`p-2.5 rounded-xl border text-left font-medium transition-all ${
-                                selectedOpt === optIndex
-                                  ? 'bg-[#E66A1F] text-white border-[#E66A1F] shadow-xs'
-                                  : 'bg-white text-[#201D1A] border-[#EDEAD9] hover:bg-[#FEF4ED]'
-                              }`}
-                            >
-                              <span className="font-bold mr-1.5">{String.fromCharCode(65 + optIndex)}.</span>
-                              {opt}
-                            </button>
-                          ))}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {q.options.map((opt, optIdx) => {
+                            const isChosen = selectedOpt === optIdx;
+                            return (
+                              <button
+                                key={optIdx}
+                                type="button"
+                                onClick={() => handleSelectAnswer(q.id, optIdx)}
+                                className={`p-2.5 rounded-xl border text-left text-xs font-medium transition-all ${
+                                  isChosen
+                                    ? 'bg-[#E66A1F] text-white border-[#E66A1F] shadow-xs'
+                                    : 'bg-white text-[#201D1A] border-[#EDEAD9] hover:border-[#E66A1F]/40'
+                                }`}
+                              >
+                                <span className="font-bold mr-2">
+                                  {String.fromCharCode(65 + optIdx)}.
+                                </span>
+                                {opt}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     );
                   })}
                 </div>
 
-                {/* Finish Test Button */}
+                {/* Submit Test Button */}
                 <div className="pt-3 border-t border-[#EDEAD9] flex items-center justify-between">
                   <span className="text-xs text-[#6B655D]">
-                    Answered: <strong>{Object.keys(userAnswers).length}</strong> / {IQ_QUESTIONS.length}
+                    Answered: <strong className="text-[#201D1A]">{Object.keys(userAnswers).length}</strong> of {IQ_QUESTIONS.length}
                   </span>
 
                   <button
                     id="finish-iq-test-btn"
+                    type="button"
                     onClick={calculateAndFinishTest}
-                    className="py-2.5 px-6 bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold rounded-2xl flex items-center gap-2 shadow-md shadow-[#E66A1F]/25 transition-transform active:scale-98"
+                    className="py-3 px-6 bg-[#396B5A] hover:bg-[#2C5245] text-white text-xs font-bold rounded-2xl flex items-center gap-2 shadow-md shadow-[#396B5A]/25 transition-transform active:scale-98"
                   >
-                    <span>Submit Evaluation & Calculate Score</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Submit 10-Minute Assessment</span>
                   </button>
                 </div>
 
               </div>
             )}
 
-            {/* STEP 3: RESULTS & SUBMIT GATEWAY */}
+            {/* ============================================================== */}
+            {/* STEP 3: TEST RESULTS & FINAL SUBMIT */}
+            {/* ============================================================== */}
             {step === 3 && (
-              <div className="space-y-6 text-center py-4">
+              <div className="space-y-5 animate-in fade-in duration-150">
                 
-                {/* Score Dial / Badge */}
-                <div className={`w-28 h-28 mx-auto rounded-full flex flex-col items-center justify-center border-4 shadow-lg ${
+                {/* Result Card */}
+                <div className={`p-6 rounded-3xl border text-center space-y-3 ${
                   testPassed
-                    ? 'border-[#396B5A] bg-[#EEF7F4] text-[#396B5A]'
-                    : 'border-red-500 bg-red-50 text-red-600'
+                    ? 'bg-[#EEF7F4] border-[#396B5A]/40'
+                    : 'bg-[#FEF4ED] border-[#E66A1F]/40'
                 }`}>
-                  <span className="text-3xl font-black font-display leading-tight">{scorePercentage}%</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider">{testPassed ? 'PASSED' : 'NOT PASSED'}</span>
-                </div>
+                  <div className={`w-16 h-16 rounded-full mx-auto flex items-center justify-center text-2xl font-black ${
+                    testPassed ? 'bg-[#396B5A] text-white' : 'bg-[#E66A1F] text-white'
+                  }`}>
+                    {scorePercentage}%
+                  </div>
 
-                <div className="space-y-1">
-                  <h3 className="text-lg font-black text-[#201D1A] font-display">
-                    {testPassed ? 'Cognitive Standard Qualified!' : 'Passing Threshold Not Reached'}
-                  </h3>
-                  <p className="text-xs text-[#6B655D] max-w-md mx-auto">
-                    {testPassed
-                      ? `Congratulations ${fullName}! Your score of ${scorePercentage}% exceeds our mandatory 70% passing bar. You are now cleared to submit your official application.`
-                      : `You achieved a score of ${scorePercentage}%. Sugartown requires a minimum score of 70% across problem solving, numerical, and logic reasoning to submit an application.`}
-                  </p>
-                </div>
-
-                {/* Gate Details */}
-                <div className="bg-[#FAF8F2] p-4 rounded-2xl border border-[#EDEAD9] text-xs text-left space-y-2 max-w-md mx-auto">
-                  <div className="flex justify-between">
-                    <span className="text-[#6B655D]">Target Position</span>
-                    <strong className="text-[#201D1A]">{selectedJob.title}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#6B655D]">Candidate</span>
-                    <strong className="text-[#201D1A]">{fullName}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#6B655D]">Score Achieved</span>
-                    <strong className={testPassed ? 'text-[#396B5A]' : 'text-red-600'}>
-                      {scorePercentage}% ({Object.values(userAnswers).filter((ans, idx) => ans === IQ_QUESTIONS[idx]?.correctIndex).length} / 10 correct)
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#6B655D]">Submission Clearance</span>
-                    <span className={`font-bold ${testPassed ? 'text-[#396B5A]' : 'text-red-600'}`}>
-                      {testPassed ? 'Unlocked (≥ 70%)' : 'Locked (< 70%)'}
-                    </span>
+                  <div>
+                    <h3 className="text-lg font-bold text-[#201D1A]">
+                      {testPassed ? 'Congratulations! Cognitive Evaluation Passed' : 'Evaluation Threshold Not Met'}
+                    </h3>
+                    <p className="text-xs text-[#6B655D] max-w-md mx-auto mt-1">
+                      {testPassed
+                        ? `You scored ${scorePercentage}% (Passing threshold: ≥ 70%). Your cognitive logic and confectionery aptitude qualification has been verified.`
+                        : `You scored ${scorePercentage}%. A minimum score of 70% is required to qualify for Sugartown store and management openings.`
+                      }
+                    </p>
                   </div>
                 </div>
 
-                {/* Actions */}
+                {/* Candidate & Application Summary */}
+                <div className="bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] p-4 text-xs space-y-2">
+                  <span className="font-bold text-[#201D1A] uppercase text-[10px] tracking-wider block">
+                    Application Package Summary:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#6B655D]">
+                    <div>Candidate: <strong className="text-[#201D1A]">{fullName}</strong> ({email})</div>
+                    <div>Applied Role: <strong className="text-[#201D1A]">{selectedJob.title}</strong></div>
+                    <div>Preferred Store: <strong className="text-[#201D1A]">{appliedLocations.join(', ')}</strong></div>
+                    <div>Shift Schedule: <strong className="text-[#201D1A]">{preferredShift}</strong></div>
+                    <div>Attached CV: <strong className="text-[#396B5A]">{uploadedCv?.name || 'CV Attached'}</strong></div>
+                    <div>Verified Docs: <strong className="text-[#396B5A]">{documentsList.filter(d => d.file !== null).length} Files</strong></div>
+                  </div>
+                </div>
+
+                {/* Questions Review */}
+                <div className="space-y-2 max-h-[30vh] overflow-y-auto pr-1">
+                  <span className="text-[11px] font-bold text-[#6B655D] uppercase tracking-wider block">
+                    Assessment Answer Review:
+                  </span>
+                  {IQ_QUESTIONS.map((q, idx) => {
+                    const userAns = userAnswers[q.id];
+                    const isCorrect = userAns === q.correctIndex;
+                    return (
+                      <div
+                        key={q.id}
+                        className={`p-3 rounded-xl border text-xs ${
+                          isCorrect ? 'bg-white border-[#396B5A]/30' : 'bg-white border-red-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#201D1A]">
+                            Q{idx + 1}: {q.question}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            isCorrect ? 'bg-[#EEF7F4] text-[#396B5A]' : 'bg-red-50 text-red-600'
+                          }`}>
+                            {isCorrect ? 'Correct' : 'Incorrect'}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[#6B655D] mt-1">
+                          Rationale: {q.explanation}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Action Buttons */}
                 <div className="flex items-center justify-center gap-3 pt-2">
                   {!testPassed && (
                     <button
@@ -764,7 +1359,9 @@ export const JobApplicationView: React.FC = () => {
               </div>
             )}
 
+            {/* ============================================================== */}
             {/* STEP 4: SUCCESS CONFIRMATION */}
+            {/* ============================================================== */}
             {step === 4 && (
               <div className="space-y-4 text-center py-6">
                 <div className="w-16 h-16 rounded-full bg-[#EEF7F4] text-[#396B5A] flex items-center justify-center mx-auto border-2 border-[#A4CDBD]">
@@ -780,8 +1377,10 @@ export const JobApplicationView: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="p-4 bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] text-xs max-w-md mx-auto text-left space-y-1">
+                <div className="p-4 bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] text-xs max-w-md mx-auto text-left space-y-1.5">
                   <p className="text-[#396B5A] font-bold">✓ Enrolled into Candidate Registry</p>
+                  <p className="text-[#6B655D]">✓ Locations Chosen: {appliedLocations.join(', ')}</p>
+                  <p className="text-[#6B655D]">✓ CV & Verification Documents Attached ({uploadedCv?.name})</p>
                   <p className="text-[#6B655D]">✓ Store Manager notified for tasting & interview round</p>
                   <p className="text-[#6B655D]">✓ Confirmation dispatched to {email}</p>
                 </div>

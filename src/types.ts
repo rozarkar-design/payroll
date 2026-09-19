@@ -4,6 +4,11 @@ export type DepartmentType =
   | 'Sales'
   | 'Marketing'
   | 'Operation'
+  | 'Store Operations'
+  | 'Sales & Customer Delight'
+  | 'Marketing & Brand'
+  | 'Backend & Supply Chain'
+  | 'Corporate Executive'
   | 'Backend'
   | 'Corporate'
   | 'Confectionery Production'
@@ -54,11 +59,15 @@ export interface EmployeeDocument {
 export interface SalaryStructure {
   baseSalary: number; // monthly
   hraAllowance: number;
+  hra?: number;
   sugartownSweetAllowance: number; // special company perk
+  allowances?: number;
   transportAllowance: number;
   overtimeHourlyRate: number;
+  overtimeRate?: number;
   taxDeductionsRate: number; // percentage, e.g. 12
   healthInsuranceDeduction: number;
+  providentFundRate?: number;
 }
 
 export interface EmergencyContact {
@@ -88,9 +97,11 @@ export interface Employee {
     annual: number; // Paid
     casual: number;
     sick: number;
-    sweetSabbatical: number;
+    sweetSabbatical?: number;
+    earned?: number;
   };
   attendanceStreak: number;
+  streakDays?: number;
   badges: string[]; // badge IDs
   notes?: string;
 }
@@ -204,6 +215,13 @@ export interface Candidate {
   iqScore?: number;
   iqPassed?: boolean;
   iqCompletedAt?: string;
+  appliedLocations?: string[];
+  preferredShift?: string;
+  cvFileName?: string;
+  cvFileSize?: string;
+  documentsCount?: number;
+  qualification?: string;
+  expectedSalary?: string;
   onboardingChecklist?: {
     welcomeKitSent: boolean;
     uniformFitted: boolean;

@@ -64,7 +64,9 @@ export const AdminPanelView: React.FC = () => {
     verifyEmployeeDocument,
     broadcastEmergencyAnnouncement,
     setActiveTab,
-    triggerConfetti
+    triggerConfetti,
+    addEmployee,
+    updateEmployee
   } = useHRMS();
 
   // Login Form State
@@ -75,7 +77,25 @@ export const AdminPanelView: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Admin Console tabs
-  const [adminTab, setAdminTab] = useState<'overview' | 'hiring_docs' | 'payroll' | 'leaves' | 'verification' | 'stores' | 'emergency' | 'audit'>('overview');
+  const [adminTab, setAdminTab] = useState<'overview' | 'staff' | 'hiring_docs' | 'payroll' | 'leaves' | 'verification' | 'stores' | 'emergency' | 'audit'>('overview');
+
+  // Staff Management State
+  const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const [staffLocationFilter, setStaffLocationFilter] = useState('All');
+  const [selectedStaffToEdit, setSelectedStaffToEdit] = useState<Employee | null>(null);
+  const [editDesignation, setEditDesignation] = useState('');
+  const [editDepartment, setEditDepartment] = useState<Employee['department']>('Store Operations');
+  const [editLocationName, setEditLocationName] = useState('');
+  const [editBaseSalary, setEditBaseSalary] = useState(0);
+  const [editHra, setEditHra] = useState(0);
+  const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffPhone, setNewStaffPhone] = useState('');
+  const [newStaffEmail, setNewStaffEmail] = useState('');
+  const [newStaffDesignation, setNewStaffDesignation] = useState('Store Executive');
+  const [newStaffDepartment, setNewStaffDepartment] = useState<Employee['department']>('Store Operations');
+  const [newStaffLocation, setNewStaffLocation] = useState('Brooklyn Candy Café & Espresso Bar');
+  const [newStaffSalary, setNewStaffSalary] = useState(3800);
 
   // Emergency broadcast form state
   const [broadcastTitle, setBroadcastTitle] = useState('');
@@ -479,6 +499,20 @@ export const AdminPanelView: React.FC = () => {
           </button>
 
           <button
+            id="admin-tab-staff-btn"
+            onClick={() => setAdminTab('staff')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
+              adminTab === 'staff' ? 'bg-[#E66A1F] text-white shadow-xs' : 'text-[#6B655D] hover:bg-[#EDEAD9]'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            <span>Staff Directory & Control</span>
+            <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#EDEAD9] text-[#201D1A]">
+              {employees.length}
+            </span>
+          </button>
+
+          <button
             id="admin-tab-hiring-docs-btn"
             onClick={() => setAdminTab('hiring_docs')}
             className={`px-4 py-2 rounded-xl text-xs font-bold transition-colors shrink-0 flex items-center gap-1.5 ${
@@ -680,6 +714,484 @@ export const AdminPanelView: React.FC = () => {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: MASTER STAFF DIRECTORY & FULL CONTROL */}
+        {adminTab === 'staff' && (
+          <div className="p-6 space-y-6 animate-in fade-in duration-150">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-bold text-[#201D1A] font-display flex items-center gap-2">
+                  <Users className="w-5 h-5 text-[#E66A1F]" />
+                  <span>Master Staff Directory & Administrative Control</span>
+                </h3>
+                <p className="text-xs text-[#6B655D]">
+                  Unrestricted access to edit designations, reassign store locations, modify base salaries, and manage employee profiles.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  id="admin-add-new-staff-btn"
+                  onClick={() => setShowAddStaffModal(true)}
+                  className="py-2.5 px-4 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white text-xs font-bold flex items-center gap-2 shadow-xs transition-colors"
+                >
+                  <PlusCircle className="w-4 h-4" />
+                  <span>Enroll New Employee</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Filter and Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#FAF8F2] p-3 rounded-2xl border border-[#EDEAD9]">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 text-[#6B655D] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  id="staff-search-input"
+                  type="text"
+                  placeholder="Search staff by name, ID (e.g. ST-1001), designation, or phone..."
+                  value={staffSearchQuery}
+                  onChange={(e) => setStaffSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-3 py-2 bg-white rounded-xl border border-[#EDEAD9] text-xs font-medium text-[#201D1A] focus:outline-none focus:border-[#E66A1F]"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <select
+                  value={staffLocationFilter}
+                  onChange={(e) => setStaffLocationFilter(e.target.value)}
+                  className="p-2 rounded-xl bg-white border border-[#EDEAD9] text-xs font-semibold text-[#201D1A] focus:outline-none focus:border-[#E66A1F]"
+                >
+                  <option value="All">All Store Locations</option>
+                  {locations.map(loc => (
+                    <option key={loc.id} value={loc.name}>{loc.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Staff Table */}
+            <div className="rounded-2xl border border-[#EDEAD9] overflow-hidden bg-white shadow-2xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#FAF8F2] border-b border-[#EDEAD9] text-[#6B655D]">
+                    <tr>
+                      <th className="p-3 font-bold uppercase tracking-wider">Employee</th>
+                      <th className="p-3 font-bold uppercase tracking-wider">Role & Dept</th>
+                      <th className="p-3 font-bold uppercase tracking-wider">Store Location</th>
+                      <th className="p-3 font-bold uppercase tracking-wider">Salary Structure</th>
+                      <th className="p-3 font-bold uppercase tracking-wider">Verification</th>
+                      <th className="p-3 font-bold uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDEAD9]">
+                    {employees
+                      .filter(emp => {
+                        const matchesQuery =
+                          emp.fullName.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                          emp.id.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                          emp.designation.toLowerCase().includes(staffSearchQuery.toLowerCase()) ||
+                          emp.phone.includes(staffSearchQuery);
+                        const matchesLoc = staffLocationFilter === 'All' || emp.locationName === staffLocationFilter;
+                        return matchesQuery && matchesLoc;
+                      })
+                      .map(emp => (
+                        <tr key={emp.id} className="hover:bg-[#FAF8F2]/60 transition-colors">
+                          <td className="p-3">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={emp.avatar}
+                                alt={emp.fullName}
+                                className="w-9 h-9 rounded-xl object-cover border border-[#EDEAD9]"
+                              />
+                              <div>
+                                <span className="font-bold text-[#201D1A] block">{emp.fullName}</span>
+                                <span className="text-[11px] text-[#6B655D] font-mono">{emp.id} · {emp.phone}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="p-3">
+                            <span className="font-semibold text-[#201D1A] block">{emp.designation}</span>
+                            <span className="text-[11px] text-[#6B655D]">{emp.department}</span>
+                          </td>
+
+                          <td className="p-3">
+                            <span className="font-medium text-[#201D1A] block">{emp.locationName}</span>
+                            <span className="text-[10px] text-[#396B5A] font-bold">● Active Store</span>
+                          </td>
+
+                          <td className="p-3">
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-[#201D1A] block">
+                                ${emp.salary.baseSalary.toLocaleString()} Basic
+                              </span>
+                              <span className="text-[10px] text-[#6B655D]">
+                                +${(emp.salary.hra || emp.salary.hraAllowance || 0).toLocaleString()} HRA · ${emp.salary.overtimeRate || emp.salary.overtimeHourlyRate || 25}/hr OT
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="p-3">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A]">
+                              {emp.documents.length} Docs Verified
+                            </span>
+                          </td>
+
+                          <td className="p-3 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                id={`edit-staff-btn-${emp.id}`}
+                                onClick={() => {
+                                  setSelectedStaffToEdit(emp);
+                                  setEditDesignation(emp.designation);
+                                  setEditDepartment(emp.department);
+                                  setEditLocationName(emp.locationName);
+                                  setEditBaseSalary(emp.salary.baseSalary);
+                                  setEditHra(emp.salary.hra || emp.salary.hraAllowance || 0);
+                                }}
+                                className="px-2.5 py-1.5 rounded-lg bg-[#FAF8F2] hover:bg-[#EDEAD9] text-[#201D1A] font-bold text-[11px] border border-[#EDEAD9] transition-colors"
+                              >
+                                Edit Role & Salary
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setSelectedDocEmpId(emp.id);
+                                  setAdminTab('verification');
+                                }}
+                                className="px-2 py-1.5 rounded-lg bg-white hover:bg-[#FAF8F2] text-[#396B5A] font-bold text-[11px] border border-[#EDEAD9] transition-colors"
+                                title="Inspect or upload verification records"
+                              >
+                                Docs
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* EDIT STAFF MODAL */}
+            {selectedStaffToEdit && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                <div className="bg-white rounded-3xl border border-[#E5E0D2] shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#EDEAD9]">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={selectedStaffToEdit.avatar}
+                        alt={selectedStaffToEdit.fullName}
+                        className="w-10 h-10 rounded-2xl object-cover border border-[#EDEAD9]"
+                      />
+                      <div>
+                        <h4 className="font-bold text-[#201D1A] text-sm">
+                          Edit {selectedStaffToEdit.fullName}
+                        </h4>
+                        <p className="text-[11px] text-[#6B655D]">
+                          ID: {selectedStaffToEdit.id} · Phone: {selectedStaffToEdit.phone}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedStaffToEdit(null)}
+                      className="p-1 rounded-lg text-[#6B655D] hover:text-[#201D1A]"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      updateEmployee(selectedStaffToEdit.id, {
+                        designation: editDesignation,
+                        department: editDepartment,
+                        locationName: editLocationName,
+                        salary: {
+                          ...selectedStaffToEdit.salary,
+                          baseSalary: editBaseSalary,
+                          hra: editHra
+                        }
+                      });
+                      triggerConfetti();
+                      setSelectedStaffToEdit(null);
+                      alert(`Successfully updated employee record for ${selectedStaffToEdit.fullName}`);
+                    }}
+                    className="space-y-3 text-xs"
+                  >
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1">Position / Designation</label>
+                      <input
+                        type="text"
+                        required
+                        value={editDesignation}
+                        onChange={(e) => setEditDesignation(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Department</label>
+                        <select
+                          value={editDepartment}
+                          onChange={(e) => setEditDepartment(e.target.value as Employee['department'])}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          <option value="Store Operations">Store Operations</option>
+                          <option value="Sales & Customer Delight">Sales & Customer Delight</option>
+                          <option value="Marketing & Brand">Marketing & Brand</option>
+                          <option value="Backend & Supply Chain">Backend & Supply Chain</option>
+                          <option value="Kitchen & Barista">Kitchen & Barista</option>
+                          <option value="Corporate Executive">Corporate Executive</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Store Location</label>
+                        <select
+                          value={editLocationName}
+                          onChange={(e) => setEditLocationName(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          {locations.map(loc => (
+                            <option key={loc.id} value={loc.name}>{loc.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary ($)</label>
+                        <input
+                          type="number"
+                          required
+                          value={editBaseSalary}
+                          onChange={(e) => setEditBaseSalary(Number(e.target.value))}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly HRA ($)</label>
+                        <input
+                          type="number"
+                          required
+                          value={editHra}
+                          onChange={(e) => setEditHra(Number(e.target.value))}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStaffToEdit(null)}
+                        className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="py-2 px-5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white font-bold"
+                      >
+                        Save Changes
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ADD NEW STAFF MODAL */}
+            {showAddStaffModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+                <div className="bg-white rounded-3xl border border-[#E5E0D2] shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#EDEAD9]">
+                    <div className="flex items-center gap-2">
+                      <PlusCircle className="w-5 h-5 text-[#E66A1F]" />
+                      <h4 className="font-bold text-[#201D1A] text-sm">Enroll New Employee</h4>
+                    </div>
+                    <button
+                      onClick={() => setShowAddStaffModal(false)}
+                      className="p-1 rounded-lg text-[#6B655D] hover:text-[#201D1A]"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      addEmployee({
+                        fullName: newStaffName,
+                        phone: newStaffPhone,
+                        email: newStaffEmail,
+                        role: 'employee',
+                        employmentStatus: 'Full-Time',
+                        designation: newStaffDesignation,
+                        department: newStaffDepartment,
+                        locationId: (locations.find(l => l.name === newStaffLocation)?.id || 'loc_cafe_brooklyn') as StoreLocationId,
+                        locationName: newStaffLocation,
+                        joiningDate: new Date().toISOString().split('T')[0],
+                        avatar: `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80`,
+                        leaveBalance: { annual: 15, sick: 10, casual: 12, earned: 15 },
+                        emergencyContact: {
+                          name: 'Primary Contact',
+                          relationship: 'Family',
+                          phone: newStaffPhone
+                        },
+                        streakDays: 1,
+                        documents: [
+                          {
+                            id: `doc-${Date.now()}-1`,
+                            name: 'Government Identity Proof',
+                            type: 'ID Proof',
+                            uploadDate: '2026-09-18',
+                            size: '1.8 MB',
+                            status: 'Verified'
+                          }
+                        ],
+                        salary: {
+                          baseSalary: newStaffSalary,
+                          hra: Math.round(newStaffSalary * 0.4),
+                          allowances: 350,
+                          hraAllowance: Math.round(newStaffSalary * 0.4),
+                          sugartownSweetAllowance: 400,
+                          transportAllowance: 200,
+                          overtimeRate: 25,
+                          overtimeHourlyRate: 25,
+                          taxDeductionsRate: 10,
+                          healthInsuranceDeduction: 120,
+                          providentFundRate: 7
+                        }
+                      });
+                      setShowAddStaffModal(false);
+                      setNewStaffName('');
+                      setNewStaffPhone('');
+                      setNewStaffEmail('');
+                      triggerConfetti();
+                      alert('New employee successfully added to Sugartown HRMS registry!');
+                    }}
+                    className="space-y-3 text-xs"
+                  >
+                    <div>
+                      <label className="block font-bold text-[#201D1A] mb-1">Full Legal Name *</label>
+                      <input
+                        type="text"
+                        required
+                        value={newStaffName}
+                        onChange={(e) => setNewStaffName(e.target.value)}
+                        placeholder="e.g. Liam Parker"
+                        className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Phone Number (Login) *</label>
+                        <input
+                          type="tel"
+                          required
+                          value={newStaffPhone}
+                          onChange={(e) => setNewStaffPhone(e.target.value)}
+                          placeholder="e.g. 555-019-8822"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Email Address *</label>
+                        <input
+                          type="email"
+                          required
+                          value={newStaffEmail}
+                          onChange={(e) => setNewStaffEmail(e.target.value)}
+                          placeholder="liam.parker@sugartown.com"
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Designation</label>
+                        <input
+                          type="text"
+                          required
+                          value={newStaffDesignation}
+                          onChange={(e) => setNewStaffDesignation(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Department</label>
+                        <select
+                          value={newStaffDepartment}
+                          onChange={(e) => setNewStaffDepartment(e.target.value as Employee['department'])}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          <option value="Store Operations">Store Operations</option>
+                          <option value="Sales & Customer Delight">Sales & Customer Delight</option>
+                          <option value="Marketing & Brand">Marketing & Brand</option>
+                          <option value="Backend & Supply Chain">Backend & Supply Chain</option>
+                          <option value="Kitchen & Barista">Kitchen & Barista</option>
+                          <option value="Corporate Executive">Corporate Executive</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Store Facility</label>
+                        <select
+                          value={newStaffLocation}
+                          onChange={(e) => setNewStaffLocation(e.target.value)}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        >
+                          {locations.map(loc => (
+                            <option key={loc.id} value={loc.name}>{loc.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block font-bold text-[#201D1A] mb-1">Monthly Base Salary ($)</label>
+                        <input
+                          type="number"
+                          required
+                          value={newStaffSalary}
+                          onChange={(e) => setNewStaffSalary(Number(e.target.value))}
+                          className="w-full p-2.5 rounded-xl border border-[#EDEAD9] bg-[#FAF8F2] text-[#201D1A] font-medium focus:bg-white focus:outline-none focus:border-[#E66A1F]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pt-3 flex justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddStaffModal(false)}
+                        className="py-2 px-4 rounded-xl border border-[#EDEAD9] text-[#6B655D] font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="py-2 px-5 rounded-xl bg-[#E66A1F] hover:bg-[#D25A12] text-white font-bold"
+                      >
+                        Enroll Employee
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

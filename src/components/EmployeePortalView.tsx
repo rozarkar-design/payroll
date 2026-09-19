@@ -22,7 +22,12 @@ import {
   Building,
   User,
   Phone,
-  Hash
+  Hash,
+  Briefcase,
+  DollarSign,
+  Award,
+  CreditCard,
+  Mail
 } from 'lucide-react';
 import { useHRMS } from '../context/HRMSContext';
 import { SugartownLogo } from './SugartownLogo';
@@ -49,7 +54,7 @@ export const EmployeePortalView: React.FC = () => {
   } = useHRMS();
 
   // Active view tab inside Employee Portal
-  const [activeSubTab, setActiveSubTab] = useState<'attendance' | 'history' | 'payslips' | 'leave'>('attendance');
+  const [activeSubTab, setActiveSubTab] = useState<'attendance' | 'history' | 'payslips' | 'leave' | 'profile'>('attendance');
 
   // Employee Login State
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
@@ -239,31 +244,14 @@ export const EmployeePortalView: React.FC = () => {
             </button>
           </form>
 
-          {/* 1-Click Demo Profiles for Store Staff */}
-          <div className="border-t border-[#EDEAD9] pt-4 space-y-2.5">
-            <p className="text-[11px] font-bold text-[#6B655D] uppercase tracking-wider text-center">
-              Or Quick Select Store Staff
+          {/* Secure Employee Access Notice */}
+          <div className="border-t border-[#EDEAD9] pt-4 text-center space-y-1">
+            <p className="text-[11px] text-[#6B655D] font-medium">
+              Authorized personnel self-service portal.
             </p>
-            <div className="grid grid-cols-1 gap-2">
-              {employees.slice(0, 4).map(e => (
-                <button
-                  key={e.id}
-                  onClick={() => handleQuickSwitch(e)}
-                  className="w-full p-2.5 rounded-2xl border border-[#E5E0D2] hover:border-[#E66A1F] hover:bg-[#FEF4ED]/50 flex items-center justify-between text-left transition-colors"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <img src={e.avatar} alt={e.fullName} className="w-8 h-8 rounded-full object-cover border border-[#E5E0D2]" />
-                    <div>
-                      <p className="text-xs font-bold text-[#201D1A]">{e.fullName}</p>
-                      <p className="text-[10px] text-[#6B655D]">{e.designation} · {e.id}</p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#EDEAD9] text-[#201D1A]">
-                    Select
-                  </span>
-                </button>
-              ))}
-            </div>
+            <p className="text-[10px] text-[#6B655D]">
+              <strong className="text-[#201D1A]">{SUGARTOWN_CORPORATE_INFO.legalName}</strong> · CIN: {SUGARTOWN_CORPORATE_INFO.cin}
+            </p>
           </div>
         </div>
       </div>
@@ -337,14 +325,15 @@ export const EmployeePortalView: React.FC = () => {
             id="employee-switch-btn"
             onClick={() => setIsLoggedIn(false)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5E0D2] text-xs font-semibold text-[#6B655D] hover:text-[#201D1A] hover:bg-[#FAF8F2] transition-colors"
+            title="Sign out of your employee session"
           >
             <LogOut className="w-3.5 h-3.5" />
-            <span>Switch Staff</span>
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
 
-      {/* Sub Navigation: Attendance, History, Payslip, Leave */}
+      {/* Sub Navigation: Attendance, History, Payslip, Leave, Profile */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 border-b border-[#E5E0D2]">
         <button
           id="subtab-daily-attendance-btn"
@@ -408,6 +397,19 @@ export const EmployeePortalView: React.FC = () => {
           <span className="text-[10px] px-1.5 py-0.2 rounded-md bg-[#EDEAD9] text-[#201D1A]">
             {emp.leaveBalance.annual + emp.leaveBalance.casual} Days Left
           </span>
+        </button>
+
+        <button
+          id="subtab-profile-info-btn"
+          onClick={() => setActiveSubTab('profile')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all whitespace-nowrap ${
+            activeSubTab === 'profile'
+              ? 'bg-[#E66A1F] text-white shadow-sm shadow-[#E66A1F]/30'
+              : 'bg-white text-[#6B655D] hover:bg-[#FAF8F2] hover:text-[#201D1A] border border-[#E5E0D2]'
+          }`}
+        >
+          <User className="w-4 h-4" />
+          <span>My Profile & Information</span>
         </button>
       </div>
 
@@ -863,6 +865,209 @@ export const EmployeePortalView: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* SUBTAB 5: MY PROFILE & EMPLOYMENT INFORMATION */}
+      {activeSubTab === 'profile' && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          
+          {/* Top Profile Summary Card */}
+          <div className="bg-white rounded-3xl border border-[#E5E0D2] p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <img
+                src={emp.avatar}
+                alt={emp.fullName}
+                className="w-20 h-20 rounded-3xl object-cover border-2 border-[#E66A1F] shadow-xs"
+              />
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-[#201D1A]">{emp.fullName}</h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] border border-[#A4CDBD]/40">
+                    Active Full-Time
+                  </span>
+                </div>
+                <p className="text-sm font-semibold text-[#E66A1F]">
+                  {emp.designation} · {emp.department} Department
+                </p>
+                <div className="flex items-center gap-4 text-xs text-[#6B655D] pt-1">
+                  <span className="flex items-center gap-1 font-mono font-bold text-[#201D1A]">
+                    <Hash className="w-3.5 h-3.5 text-[#6B655D]" /> {emp.id}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-[#396B5A]" /> {emp.locationName}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#6B655D]" /> Joined {emp.joiningDate}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#FAF8F2] rounded-2xl border border-[#EDEAD9] text-right shrink-0">
+              <span className="text-[11px] font-bold text-[#6B655D] uppercase tracking-wider block">
+                Official Entity
+              </span>
+              <span className="text-xs font-bold text-[#201D1A] block mt-0.5">
+                {SUGARTOWN_CORPORATE_INFO.legalName}
+              </span>
+              <span className="text-[11px] text-[#396B5A] font-semibold block mt-0.5">
+                CIN: {SUGARTOWN_CORPORATE_INFO.cin}
+              </span>
+            </div>
+          </div>
+
+          {/* 3-Column Detailed Information Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            {/* CARD 1: PERSONAL & CONTACT INFORMATION */}
+            <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#EDEAD9]">
+                <User className="w-4 h-4 text-[#E66A1F]" />
+                <h3 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                  Personal & Contact Details
+                </h3>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-[#6B655D] uppercase font-bold block">Registered Mobile</span>
+                  <span className="font-semibold text-[#201D1A] flex items-center gap-1.5 mt-0.5">
+                    <Phone className="w-3.5 h-3.5 text-[#396B5A]" /> {emp.phone}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-[#6B655D] uppercase font-bold block">Official Email</span>
+                  <span className="font-semibold text-[#201D1A] flex items-center gap-1.5 mt-0.5">
+                    <Mail className="w-3.5 h-3.5 text-[#396B5A]" /> {emp.email}
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] text-[#6B655D] uppercase font-bold block">Reporting Manager</span>
+                  <span className="font-semibold text-[#201D1A] flex items-center gap-1.5 mt-0.5">
+                    <Briefcase className="w-3.5 h-3.5 text-[#6B655D]" /> Eleanor Vance (Director of HR)
+                  </span>
+                </div>
+
+                <div className="pt-2 border-t border-[#EDEAD9]">
+                  <span className="text-[10px] text-[#6B655D] uppercase font-bold block">Emergency Contact</span>
+                  <div className="mt-1 p-2.5 bg-[#FAF8F2] rounded-xl border border-[#EDEAD9] text-xs">
+                    <p className="font-bold text-[#201D1A]">{emp.emergencyContact.name}</p>
+                    <p className="text-[#6B655D] text-[11px]">{emp.emergencyContact.relationship} · {emp.emergencyContact.phone}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: SALARY & COMPENSATION STRUCTURE */}
+            <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#EDEAD9]">
+                <CreditCard className="w-4 h-4 text-[#396B5A]" />
+                <h3 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                  My Salary Structure
+                </h3>
+              </div>
+
+              <div className="space-y-2.5 text-xs">
+                <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
+                  <span className="text-[#6B655D]">Basic Monthly Salary</span>
+                  <span className="font-bold text-[#201D1A]">${emp.salary.baseSalary.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
+                  <span className="text-[#6B655D]">House Rent Allowance (HRA)</span>
+                  <span className="font-bold text-[#201D1A]">${emp.salary.hra.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
+                  <span className="text-[#6B655D]">Sugartown Special Allowance</span>
+                  <span className="font-bold text-[#201D1A]">${emp.salary.allowances.toLocaleString()}</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
+                  <span className="text-[#6B655D]">Overtime Rate</span>
+                  <span className="font-bold text-[#396B5A]">${emp.salary.overtimeRate} / hour</span>
+                </div>
+
+                <div className="flex justify-between py-1 border-b border-[#EDEAD9]/60">
+                  <span className="text-[#6B655D]">Estimated Deductions (PF/Tax)</span>
+                  <span className="font-bold text-red-600">-$340</span>
+                </div>
+
+                <div className="pt-2 flex justify-between items-center text-sm font-bold bg-[#EEF7F4] p-2.5 rounded-xl border border-[#A4CDBD]/40">
+                  <span className="text-[#396B5A]">Est. Net Take-Home</span>
+                  <span className="text-[#396B5A]">
+                    ${(emp.salary.baseSalary + emp.salary.hra + emp.salary.allowances - 340).toLocaleString()} / mo
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 3: VERIFIED DOCUMENTS & COMPLIANCE */}
+            <div className="bg-white rounded-3xl border border-[#E5E0D2] p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2 pb-3 border-b border-[#EDEAD9]">
+                <ShieldCheck className="w-4 h-4 text-[#396B5A]" />
+                <h3 className="text-xs font-bold text-[#201D1A] uppercase tracking-wider">
+                  Verified Employee Records
+                </h3>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#396B5A]" />
+                    <span className="font-bold text-[#201D1A]">Government ID / KYC</span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-2 py-0.5 rounded">
+                    Verified
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#396B5A]" />
+                    <span className="font-bold text-[#201D1A]">Food Hygiene & FSSAI</span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-2 py-0.5 rounded">
+                    Certified
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#396B5A]" />
+                    <span className="font-bold text-[#201D1A]">Employment Agreement</span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-2 py-0.5 rounded">
+                    Signed
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-[#FAF8F2] border border-[#EDEAD9] flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-[#396B5A]" />
+                    <span className="font-bold text-[#201D1A]">Direct Deposit Bank W-4</span>
+                  </div>
+                  <span className="text-[10px] font-bold bg-[#EEF7F4] text-[#396B5A] px-2 py-0.5 rounded">
+                    Active
+                  </span>
+                </div>
+              </div>
+
+              {/* Attendance Streak Pill */}
+              <div className="p-3 rounded-2xl bg-gradient-to-r from-[#FAF8F2] to-[#FEF4ED] border border-[#E66A1F]/20 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-[#E66A1F]" />
+                  <span className="text-xs font-bold text-[#201D1A]">Current Punch Streak</span>
+                </div>
+                <span className="text-xs font-extrabold text-[#E66A1F]">{emp.streakDays} Consecutive Days</span>
+              </div>
+            </div>
+
           </div>
 
         </div>

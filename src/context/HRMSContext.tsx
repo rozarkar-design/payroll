@@ -129,6 +129,13 @@ interface HRMSContextType {
     department?: string;
     iqScore: number;
     iqPassed: boolean;
+    appliedLocations?: string[];
+    preferredShift?: string;
+    cvFileName?: string;
+    cvFileSize?: string;
+    documentsCount?: number;
+    qualification?: string;
+    expectedSalary?: string;
   }) => { success: boolean; message: string };
   updateCandidateStage: (candidateId: string, stage: CandidateStage) => void;
   updateOnboardingItem: (candidateId: string, key: string, val: boolean) => void;
@@ -799,6 +806,13 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     department?: string;
     iqScore: number;
     iqPassed: boolean;
+    appliedLocations?: string[];
+    preferredShift?: string;
+    cvFileName?: string;
+    cvFileSize?: string;
+    documentsCount?: number;
+    qualification?: string;
+    expectedSalary?: string;
   }) => {
     const newCand: Candidate = {
       ...candData,
