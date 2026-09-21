@@ -65,13 +65,6 @@ export const CorporateFooter: React.FC = () => {
                   <Globe className="w-3.5 h-3.5" />
                   <span>sugartown.in</span>
                 </a>
-                <a 
-                  href="tel:+919145448010" 
-                  className="inline-flex items-center gap-1.5 font-semibold text-[#201D1A] hover:text-[#E66A1F]"
-                >
-                  <Phone className="w-3.5 h-3.5 text-[#396B5A]" />
-                  <span>+91 91454 48010</span>
-                </a>
               </div>
             </div>
 
@@ -90,16 +83,8 @@ export const CorporateFooter: React.FC = () => {
                   702, Workflo Icon Tower, Baner, Pune – 411045, Maharashtra, India
                 </p>
                 <div className="pt-2 border-t border-[#EDEAD9] flex items-center justify-between text-[11px]">
-                  <span className="text-[#6B655D]">Website:</span>
-                  <a href="https://sugartown.in" target="_blank" rel="noreferrer" className="font-bold text-[#E66A1F] hover:underline">
-                    sugartown.in
-                  </a>
-                </div>
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="text-[#6B655D]">Phone:</span>
-                  <a href="tel:+919145448010" className="font-bold text-[#201D1A] hover:text-[#E66A1F]">
-                    +91 91454 48010
-                  </a>
+                  <span className="text-[#6B655D]">Jurisdiction:</span>
+                  <span className="font-semibold text-[#201D1A]">RoC Pune, Maharashtra</span>
                 </div>
               </div>
             </div>

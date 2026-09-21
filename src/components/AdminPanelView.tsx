@@ -388,7 +388,7 @@ export const AdminPanelView: React.FC = () => {
               </span>
             </div>
             <p className="text-xs text-stone-300 mt-0.5">
-              Admin: <strong className="text-white font-mono">{adminSession?.phone || '9145448010'}</strong> · Active since {new Date(adminSession?.loginTime || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              Admin: <strong className="text-white font-medium">Master Admin</strong> · Active since {new Date(adminSession?.loginTime || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </p>
             <p className="text-[10px] text-[#A4CDBD] font-medium mt-0.5">
               {SUGARTOWN_CORPORATE_INFO.legalName} · CIN: {SUGARTOWN_CORPORATE_INFO.cin}
@@ -1643,7 +1643,7 @@ export const AdminPanelView: React.FC = () => {
                             <button
                               id={`approve-leave-${req.id}`}
                               onClick={() => {
-                                reviewLeave(req.id, 'approved', commentVal || 'Authorized by Master Admin (9145448010)');
+                                reviewLeave(req.id, 'approved', commentVal || 'Authorized by Master Administrator');
                                 triggerConfetti();
                               }}
                               className="flex-1 sm:flex-none py-1.5 px-3 bg-[#396B5A] hover:bg-[#2C5346] text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1"

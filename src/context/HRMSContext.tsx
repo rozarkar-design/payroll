@@ -1011,12 +1011,12 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(STORAGE_KEYS.ADMIN_AUTH, 'true');
       localStorage.setItem(STORAGE_KEYS.ADMIN_SESSION, JSON.stringify(session));
       setCurrentRole('super_admin');
-      logAction('Admin Authenticated', 'Master Administrator authenticated via secure phone login (9145448010)', 'Security');
+      logAction('Admin Authenticated', 'Master Administrator session authenticated', 'Security');
       triggerConfetti();
       return { success: true };
     } else {
-      logAction('Admin Auth Failed', `Failed admin login attempt using phone number: ${phone || 'Empty'}`, 'Security');
-      return { success: false, error: 'Invalid admin phone number or password. Access denied.' };
+      logAction('Admin Auth Failed', `Failed admin login attempt using input: ${phone ? 'provided' : 'Empty'}`, 'Security');
+      return { success: false, error: 'Invalid admin credentials. Access denied.' };
     }
   };
 
@@ -1026,14 +1026,14 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem(STORAGE_KEYS.ADMIN_AUTH);
     localStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
     setActiveTab('dashboard');
-    logAction('Admin Logged Out', 'Master Administrator session closed (9145448010)', 'Security');
+    logAction('Admin Logged Out', 'Master Administrator session closed', 'Security');
   };
 
   const batchApproveAllPendingLeaves = (): number => {
     const pending = leaveRequests.filter(l => l.status === 'pending');
     if (pending.length === 0) return 0;
     pending.forEach(l => {
-      reviewLeave(l.id, 'approved', 'Batch authorized by Master Administrator (9145448010)');
+      reviewLeave(l.id, 'approved', 'Batch authorized by Master Administrator');
     });
     triggerConfetti();
     return pending.length;
@@ -1046,7 +1046,7 @@ export const HRMSProvider: React.FC<{ children: React.ReactNode }> = ({ children
         title: `🚨 ${title}`,
         content: message,
         category: 'Store Update',
-        author: 'Executive Admin (9145448010)',
+        author: 'Executive Management',
         authorRole: 'Master Administrator',
         date: new Date().toISOString().split('T')[0],
         pinned: true
